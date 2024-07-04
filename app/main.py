@@ -35,7 +35,7 @@ app = FastAPI(
     lifespan=lifespan_for_fastapi
 )
 
-
+#
 fastapi_users_modules = FastAPIUsers[User, int](
     get_user_manager=get_user_managers,
     auth_backends=[auth_backend]
@@ -43,6 +43,9 @@ fastapi_users_modules = FastAPIUsers[User, int](
 
 #Фукнция для аунтефикации пользовател, также нужно указать auth_backend (модель что выдавать юзеру, в нашем случае JWT) 
 app.include_router(fastapi_users_modules.get_auth_router(auth_backend), prefix='/auth', tags=['Auth'])
-
 #Функция для Регистрации и получения информации по юзеру
 app.include_router(fastapi_users_modules.get_register_router(UserRead, UserCreate), prefix='/auth', tags=['Auth'])
+#Функция для получения корректного юзера
+
+
+get_current_user = fastapi_users_modules.current_user()

@@ -14,6 +14,10 @@ Bases_meta: DeclarativeMeta = declarative_base()
 #Модель для первичной регитрации пользователя
 class User(SQLAlchemyBaseUserTable[int], Bases_meta):
     __tablename__ = 'user'
+    #Свои колонки
+    first_name: Mapped[str] = mapped_column(String(length=50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(length=50), nullable=False)
+    phone: Mapped[str] = mapped_column(String(length=20), nullable=False)
 
     #Переопределние колонок из SQLAlchemyBaseUserTable
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -25,13 +29,20 @@ class User(SQLAlchemyBaseUserTable[int], Bases_meta):
 
 
 
+
 user = Table(
     'user',
     metadata_for_table2_user,
+    #Обязательные колонки
     Column('id', Integer, primary_key=True),
     Column('email', String, nullable=False),
     Column('hashed_password', String, nullable=False),
     Column('is_active', Boolean, default=True, nullable=False),
     Column('is_superuser', Boolean, default=False, nullable=False),
     Column('is_verified', Boolean, default=False, nullable=False),
+
+    #Кастомные
+    Column('first_name', String(length=50), nullable=False),
+    Column('last_name', String(length=50), nullable=False),
+    Column('phone', String(length=20), nullable=False)
 )
