@@ -8,6 +8,7 @@ from auth.models import User
 from auth.auth import auth_backend
 from auth.manager import get_user_managers
 from auth.schema import UserCreate, UserRead
+from restoraunt.routers import router as restoraunt_router
 settings_app = BaseSettingForApp()
 
 
@@ -35,7 +36,14 @@ app = FastAPI(
     lifespan=lifespan_for_fastapi
 )
 
-#
+
+app.include_router(
+    restoraunt_router,
+    prefix='/restoraunt',
+    tags=['Restoraunt']
+    )
+
+
 fastapi_users_modules = FastAPIUsers[User, int](
     get_user_manager=get_user_managers,
     auth_backends=[auth_backend]
@@ -48,4 +56,3 @@ app.include_router(fastapi_users_modules.get_register_router(UserRead, UserCreat
 #Функция для получения корректного юзера
 
 
-get_current_user = fastapi_users_modules.current_user()

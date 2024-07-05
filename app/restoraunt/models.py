@@ -10,7 +10,15 @@ metadata_restoraunt = MetaData()
 
 
 
+MenuModel = Table(
+    'menu',
+    metadata_restoraunt,
+    Column('id', Integer, primary_key=True),
+    Column('title', String, nullable=False),
+    Column('description', String, nullable=True),
 
+    Column('restoraunt_id', Integer, ForeignKey('restorunt.id', ondelete='RESTRICT'), nullable=False, unique=True)
+)
 
 #Модель создания ресторана
 Restoraunt = Table(
@@ -23,19 +31,13 @@ Restoraunt = Table(
     Column('description', String, nullable=True),
 
     #ССылка на пользователя, который оформил размещение ресторана
-    Column('user_id', Integer, ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False)
+    Column('user_id', Integer, ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False),
+    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'), nullable=True)
 )
 
 
 
-MenuModel = Table(
-    'menu',
-    metadata_restoraunt,
-    Column('id', Integer, primary_key=True),
-    Column('title', String, nullable=False),
-    Column('description', String, nullable=True),
-    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False)
-)
+
 
 ContactModel = Table(
     'contact',
@@ -46,7 +48,7 @@ ContactModel = Table(
     Column('office_restoraunt_address', String, nullable=True),
 
     #К какому ресторану будет относится эта схема
-    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False)
+    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False, unique=True)
 )
 
 

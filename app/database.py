@@ -8,6 +8,7 @@ from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 from fastapi import Depends 
 from typing import Annotated
 from auth.models import User
+from restoraunt.models import metadata_restoraunt
 
 database_settings = DataBaseSettingPostgre()
 
@@ -29,12 +30,14 @@ async def create_table():
         #Создаение всех таблиц
         await connect.run_sync(Bases_meta.metadata.create_all)
         await connect.run_sync(metadata_for_table2_user.create_all)
+        await connect.run_sync(metadata_restoraunt.create_all)
 
 async def delete_table():
     async with engine.begin() as connect:
         #Удаление всех таблиц
         await connect.run_sync(Bases_meta.metadata.drop_all)
         await connect.run_sync(metadata_for_table2_user.drop_all)
+        await connect.run_sync(metadata_restoraunt.drop_all)
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
