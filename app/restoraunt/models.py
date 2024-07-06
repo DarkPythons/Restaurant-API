@@ -43,7 +43,7 @@ ContactModel = Table(
     'contact',
     metadata_restoraunt,
     Column('id', Integer, primary_key=True),
-    Column('phone', String),
+    Column('phone', String, nullable=False),
     Column('manager', String, nullable=True),
     Column('office_restoraunt_address', String, nullable=True),
 

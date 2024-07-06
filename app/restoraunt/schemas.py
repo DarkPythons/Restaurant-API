@@ -15,6 +15,7 @@ class AddDishiesSchema(BaseDishesSchema):
 
 class GetDishiesSchema(BaseDishesSchema):
     id: int
+    category_id: int
 
 
 
@@ -46,6 +47,9 @@ class ContatSchema(BaseModel):
     manager: Optional[str] = Field(min_length=3, max_length=200, default=None)
     office_restoraunt_address: Optional[str] = None
 
+class VievContantModel(ContatSchema):
+    id: int
+    restoraunt_id: int
 
 class BaseRestorauntSchema(BaseModel):
     title: str = Field(min_length=1, max_length=50)
@@ -53,29 +57,43 @@ class BaseRestorauntSchema(BaseModel):
     address: str = Field(min_length=5, max_length=100)
     description: Optional[str] = Field(min_length=10, max_length=300, default=None)
 
-    
 
 
-class AddNewRestoraunt(BaseRestorauntSchema):
-    pass
+
 
 class BaseMenuRestoraunt(BaseModel):
     title:str = Field(min_length=1, max_length=50)
-    description: Optional[str] = Field(min_length=10, max_length=300, default=None)    
+    description: Optional[str] = Field(min_length=10, max_length=300, default=None) 
 
 
-class AddMenuSchema(BaseMenuRestoraunt):
-    pass
+class BaseMenuInfo(BaseMenuRestoraunt):
+    id: int
+    restoraunt_id:int
+
 
 class ShowMenuSchema(BaseMenuRestoraunt):
     cetegotiers_list: List[CategorySchema]
 
+class ShowBaseInfoRestrount(BaseRestorauntSchema):
+    id: int
+
+
+class SchemaShowCategory(BaseModel):
+    category: GetDishiesSchema
+
+
+    
+class AddNewRestoraunt(BaseRestorauntSchema):
+    pass
+class AddMenuSchema(BaseMenuRestoraunt):
+    pass
 
 
 
-class ShowInfoRestoraunt(BaseRestorauntSchema):
-    #Айди ресторана из базы
-    id: int  
-    contact_information: ContatSchema
+
+
+class ShowFullInfoRestoraunt(BaseModel):
+    base_restoraunt_info: ShowBaseInfoRestrount
+    contact_information: VievContantModel
+    base_menu_info: BaseMenuInfo
     #Глубокая вложенность для меню
-    menu: Optional[ShowMenuSchema] = None

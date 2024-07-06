@@ -1,4 +1,4 @@
-from .models import Restoraunt, MenuModel, CategoryModel,DishesModel
+from .models import Restoraunt, MenuModel, CategoryModel,DishesModel,ContactModel
 from sqlalchemy import insert, select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -27,9 +27,14 @@ async def get_restoraunt_osnov_for_id_rest(*, session: AsyncSession,restoraunt_i
 
 
 async def add_new_info_for_menu(*, restoraunt_id:int, session: AsyncSession, title, description):
-    query = insert(MenuModel).values(title=title, description=description, restoraunt_id=restoraunt_id)
-    await session.execute(query)
+    query = insert(MenuModel).values(title=title, description=description, restoraunt_id=restoraunt_id).returning(MenuModel)
+    
+    result = await session.execute(query)
+    menu_id_after_adds = result.first()[0]
+    query1 = update(Restoraunt).values(menu_id=menu_id_after_adds).where(Restoraunt.c.id == restoraunt_id)
+    await session.execute(query1)
     await session.commit()
+
 
 
 
@@ -54,3 +59,35 @@ async def add_new_dishaes_on_category(*, list_of_dishies: List[AddDishiesSchema]
         query = insert(DishesModel).values(**dishies.model_dump(), category_id=category_id)
         await session.execute(query)
     await session.commit()
+
+
+async def get_contact_info(*,session,restoraunt_id):
+    query = select(ContactModel).where(ContactModel.c.restoraunt_id == restoraunt_id)
+    result = await session.execute(query)
+    return result.mappings().all()
+
+async def add_new_contact_info_for_restorant(*,session,restoraunt_id, phone,manager,office_restoraunt_address):
+    query = insert(ContactModel).values(restoraunt_id=restoraunt_id,phone=phone,manager=manager,office_restoraunt_address=office_restoraunt_address)
+    await session.execute(query)
+    await session.commit()
+
+
+async def get_restaraunt_menu(*, session, restoraunt_id):
+    query = select(Restoraunt.c.menu_id).where(Restoraunt.c.id == restoraunt_id)
+    result = await session.execute(query)
+    return result.first()
+
+async def get_category_orm(*, session, restoraunt_id):
+    query = select(CategoryModel).where(CategoryModel.c.menu_id == restoraunt_id)
+    result = await session.execute(query)
+    return result.mappings().all()
+
+async def get_list_products_for_category(*, session, category_id):
+    query = select(DishesModel).where(DishesModel.c.category_id == category_id)
+    result = await session.execute(query)
+    return result.mappings().all()
+
+async def get_menu_info_for_orm(*, session, restoraunt_id):
+    query = select(MenuModel).where(MenuModel.c.restoraunt_id == restoraunt_id)
+    result = await session.execute(query)
+    return (result.mappings().all())[0]
