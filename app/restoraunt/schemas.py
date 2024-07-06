@@ -91,12 +91,25 @@ class AddMenuSchema(BaseMenuRestoraunt):
     pass
 
 
+class VievContantModelNoError(BaseModel):
+    id: Optional[int] = Field(default=None)
+    phone: Optional[str] = Field(default=None, min_length=5, max_length=20)
+    manager: Optional[str] = Field(min_length=3, max_length=200, default=None)
+    office_restoraunt_address: Optional[str] = None
 
+    restoraunt_id: Optional[int] = Field(default=None, ge=1)
 
+class BaseMenuInfoNoError(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=50)
+    description: Optional[str] = Field(min_length=10, max_length=300, default=None) 
+    id: Optional[int] = Field(default=None, ge=1)
+    restoraunt_id: Optional[int] = Field(default=None, ge=1)
 
 class ShowFullInfoRestoraunt(BaseModel):
     base_restoraunt_info: ShowBaseInfoRestrount
-    contact_information: VievContantModel
-    base_menu_info: BaseMenuInfo
+
+
+    contact_information: VievContantModelNoError
+    base_menu_info: BaseMenuInfoNoError
     #Глубокая вложенность для меню
-    menu_list: List[Dict]
+    menu_list: List[Dict] 

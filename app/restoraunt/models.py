@@ -61,7 +61,8 @@ CategoryModel = Table(
     Column('title', String, nullable=False),
     Column('description', String, nullable=True),
 
-    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'), nullable=False)
+    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'), nullable=False),
+    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False)
 )
 
 
@@ -78,5 +79,7 @@ DishesModel = Table(
     Column('kolories', Integer, nullable=True),
 
     #Ссылка к какой категории относится блюдо
-    Column('category_id', ForeignKey(CategoryModel.c.id, ondelete='RESTRICT'), nullable=False)
+    Column('category_id', Integer, ForeignKey(CategoryModel.c.id, ondelete='RESTRICT'), nullable=False),
+    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'),nullable=False),
+    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False),
 )
