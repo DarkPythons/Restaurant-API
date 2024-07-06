@@ -4,7 +4,7 @@ from typing import Annotated, List
 from auth.models import User
 from .schemas import (BaseRestorauntSchema, AddNewRestoraunt, ShowFullInfoRestoraunt,
     AddMenuSchema,AddNewCategorSchema,
-    AddDishiesSchema, ContatSchema,
+    AddDishiesSchema, ContatSchema, ListGetDishiesSchema, BaseDishesSchema
     )
 from .orm import *
 from database import get_async_session
@@ -92,7 +92,7 @@ async def add_contact_info(contact_info: ContatSchema,restoraunt_id:int,current_
     else: 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
 
-
+import json
     
 
 async def get_list_products_for_menu(*, restoraunt_id, session):
@@ -101,7 +101,9 @@ async def get_list_products_for_menu(*, restoraunt_id, session):
     for one_category_info in category_info_list:
         dict_category: dict = {}
         products_list_dict_for_category = await get_list_products_for_category(category_id=one_category_info['id'], session=session)
-        
+        products_list_dict_for_category = [dict(x) for x in products_list_dict_for_category]
+        #products_list_dict_for_category = json.dumps(products_list_dict_for_category)
+
         dict_category[one_category_info["title"]] = products_list_dict_for_category
         list_category_dishayes.append(dict_category)
     return list_category_dishayes
@@ -109,7 +111,7 @@ async def get_list_products_for_menu(*, restoraunt_id, session):
 
 
 
-@router.get('/get_info_restoraunt/{restoraunt_id}', )#response_model=ShowFullInfoRestoraunt)
+@router.get('/get_info_restoraunt/{restoraunt_id}', response_model=ShowFullInfoRestoraunt)
 async def get_restoraunt_by_id(restoraunt_id: int, session_param: Annotated[AsyncSession, Depends(get_async_session)]):
     base_result_by_search:list = await get_info_restoraunt_by_id(restoraunt_id=restoraunt_id, session=session_param)
     if base_result_by_search:

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Any, Dict
 
 
 #Схема для блюда
@@ -17,6 +17,8 @@ class GetDishiesSchema(BaseDishesSchema):
     id: int
     category_id: int
 
+class ListGetDishiesSchema(BaseModel):
+    data: List[GetDishiesSchema]
 
 
 #Категория продукта
@@ -79,7 +81,7 @@ class ShowBaseInfoRestrount(BaseRestorauntSchema):
 
 
 class SchemaShowCategory(BaseModel):
-    category: GetDishiesSchema
+    category_name: List[Optional[GetDishiesSchema]]
 
 
     
@@ -97,3 +99,4 @@ class ShowFullInfoRestoraunt(BaseModel):
     contact_information: VievContantModel
     base_menu_info: BaseMenuInfo
     #Глубокая вложенность для меню
+    menu_list: List[Dict]
