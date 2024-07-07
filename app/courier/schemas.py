@@ -10,8 +10,8 @@ class BaseCourierSchemas(BaseModel):
     phone: str = Field(min_length=5, max_length=20)    
     verified: bool = Field(default=False)
     in_work: bool = Field(default=False)
-    user_id: int
-    
+
+
 class AddNewCourierShemas(BaseCourierSchemas):
     email: EmailStr = Field(min_length=5, max_length=100)
 
@@ -20,4 +20,4 @@ class AddNewCourierShemas(BaseCourierSchemas):
 
 class ShowCourierSchemas(BaseCourierSchemas):
     id: int
-    
+    user_id: int

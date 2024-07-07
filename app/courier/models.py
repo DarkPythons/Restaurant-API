@@ -6,7 +6,7 @@ courier_metadata = MetaData()
 
 
 
-Courier = Table(
+CourierTable = Table(
     'courier',
     courier_metadata,
     Column('id', Integer, primary_key=True),
