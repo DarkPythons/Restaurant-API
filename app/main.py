@@ -9,6 +9,7 @@ from auth.auth import auth_backend
 from auth.manager import get_user_managers
 from auth.schema import UserCreate, UserRead
 from restoraunt.routers import router as restoraunt_router
+from courier.routers import router_courier
 settings_app = BaseSettingForApp()
 
 
@@ -43,6 +44,11 @@ app.include_router(
     tags=['Restoraunt']
     )
 
+app.include_router(
+    router_courier,
+    prefix='/courier',
+    tags=['Courier']
+)
 
 fastapi_users_modules = FastAPIUsers[User, int](
     get_user_manager=get_user_managers,
