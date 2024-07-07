@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
-from .utils import get_current_user
+from .utils import get_current_user, get_data_itog_for_restoraunt, get_contact_info
 from typing import Annotated, List
 from auth.models import User
 from .schemas import (BaseRestorauntSchema, AddNewRestoraunt, ShowFullInfoRestoraunt,
@@ -89,7 +89,7 @@ async def add_contact_info(contact_info: ContatSchema,restoraunt_id:int,current_
         if contact_info_for_restoraunt:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='У вас уже есть контактная информация')
         await add_new_contact_info_for_restorant(**contact_info.model_dump(), restoraunt_id=restoraunt_id, session=session_param)
-        return Response(content="Создание контактной информации произошло успешно!", status_code=status.HTTP_201_CREATED)
+        return ORJSONResponse(content={"content" : "Добавление контактной информации успешно произошло!"}, status_code=status.HTTP_201_CREATED)
     elif verifeied_user == 'Not restoraunt':
         raise HTTPException(status_code=404, detail='Ресторана с таким id не найдено.')
     else: 
@@ -97,32 +97,12 @@ async def add_contact_info(contact_info: ContatSchema,restoraunt_id:int,current_
 
 
 
-
-
-
-
-
-
-
 @router.get('/get_info_restoraunt/{restoraunt_id}', response_model=ShowFullInfoRestoraunt)
 async def get_restoraunt_by_id(restoraunt_id: int, session_param: Annotated[AsyncSession, Depends(get_async_session)]):
     base_result_by_search:list = await get_info_restoraunt_by_id(restoraunt_id=restoraunt_id, session=session_param)
     if base_result_by_search:
-        #Получение контактной информации
-        contact_info_itog = {}
-        contact_info = await get_contact_info(restoraunt_id=restoraunt_id, session=session_param)
-        if contact_info:
-            contact_info_itog = {**contact_info[0]}
-        list_category_dishayes = await get_list_products_for_menu(restoraunt_id=restoraunt_id, session=session_param)
-        base_info_restoraunt = {**base_result_by_search[0]}
-        base_menu_info = await get_menu_info_for_orm(restoraunt_id=restoraunt_id, session=session_param)
-        if not base_menu_info:
-            base_menu_info = {}
-        else:
-            base_menu_info = base_menu_info[0]
-        data_itog = {"base_restoraunt_info" : base_info_restoraunt, "contact_information" : contact_info_itog, 'base_menu_info' : base_menu_info, "menu_list" : list_category_dishayes}
+        data_itog = await get_data_itog_for_restoraunt(restoraunt_id=restoraunt_id, session=session_param, base_result_by_search=base_result_by_search)
         return data_itog
-    
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Ресторана с таким id нет')
 

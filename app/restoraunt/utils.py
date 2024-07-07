@@ -2,7 +2,8 @@ from fastapi_users import FastAPIUsers
 from auth.auth import auth_backend
 from auth.manager import get_user_managers
 from auth.models import User
-from .orm import get_restoraunt_osnov_for_id_rest, get_category_orm, get_list_products_for_category
+from .orm import get_restoraunt_osnov_for_id_rest, get_category_orm, get_list_products_for_category, get_menu_info_for_orm,get_contact_info_orm
+from sqlalchemy.ext.asyncio import AsyncSession
 fastapi_users_modules = FastAPIUsers[User, int](
     get_user_manager=get_user_managers,
     auth_backends=[auth_backend]
@@ -32,3 +33,28 @@ async def get_list_products_for_menu(*, restoraunt_id, session):
         dict_category[one_category_info["title"]] = products_list_dict_for_category
         list_category_dishayes.append(dict_category)
     return list_category_dishayes
+
+
+
+async def get_contact_info(*,restoraunt_id:int, session: AsyncSession):
+    #Получение контактной информации
+    contact_info_itog = {}
+    contact_info = await get_contact_info_orm(restoraunt_id=restoraunt_id, session=session)
+    if contact_info:
+        contact_info_itog = {**contact_info[0]}
+    return contact_info_itog
+
+async def get_base_menu_info(restoraunt_id:int,session:AsyncSession):
+    base_menu_info = await get_menu_info_for_orm(restoraunt_id=restoraunt_id, session=session)
+    if not base_menu_info:
+        return {}
+    else:
+        return base_menu_info[0]
+
+async def get_data_itog_for_restoraunt(restoraunt_id:int, session: AsyncSession, base_result_by_search):
+    contact_info = await get_contact_info(restoraunt_id=restoraunt_id, session=session)
+    list_category_dishayes = await get_list_products_for_menu(restoraunt_id=restoraunt_id, session=session)
+    base_info_restoraunt = {**base_result_by_search[0]}
+    base_menu_info = await get_base_menu_info(restoraunt_id=restoraunt_id,session=session)
+    data_itog = {"base_restoraunt_info" : base_info_restoraunt, "contact_information" : contact_info, 'base_menu_info' : base_menu_info, "menu_list" : list_category_dishayes}
+    return data_itog

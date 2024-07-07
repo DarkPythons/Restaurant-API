@@ -61,7 +61,7 @@ async def add_new_dishaes_on_category(*, list_of_dishies: List[AddDishiesSchema]
     await session.commit()
 
 
-async def get_contact_info(*,session,restoraunt_id):
+async def get_contact_info_orm(*,session,restoraunt_id):
     query = select(ContactModel).where(ContactModel.c.restoraunt_id == restoraunt_id)
     result = await session.execute(query)
     return result.mappings().all()
