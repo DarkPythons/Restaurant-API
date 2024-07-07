@@ -10,6 +10,8 @@ from typing import Annotated
 from auth.models import User
 from restoraunt.models import metadata_restoraunt
 from courier.models import courier_metadata
+from backet.models import backet_metadata
+from orders.models import orders_metadata
 database_settings = DataBaseSettingPostgre()
 
 #url базы данных
@@ -25,21 +27,33 @@ engine = create_async_engine(DATABASE_URL)
 #Шаблон подключения для сессии
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
+
+
+METADATA_TABLE_LIST = [
+    metadata_for_table2_user,
+    metadata_restoraunt,
+    courier_metadata,
+    backet_metadata,
+    orders_metadata,
+]
+
+
+
 async def create_table():
     async with engine.begin() as connect:
         #Создаение всех таблиц
         await connect.run_sync(Bases_meta.metadata.create_all)
-        await connect.run_sync(metadata_for_table2_user.create_all)
-        await connect.run_sync(metadata_restoraunt.create_all)
-        await connect.run_sync(courier_metadata.create_all)
+        for metadata in METADATA_TABLE_LIST:
+            await connect.run_sync(metadata.create_all)
+
+
 
 async def delete_table():
     async with engine.begin() as connect:
         #Удаление всех таблиц
         await connect.run_sync(Bases_meta.metadata.drop_all)
-        await connect.run_sync(metadata_for_table2_user.drop_all)
-        await connect.run_sync(metadata_restoraunt.drop_all)
-        await connect.run_sync(courier_metadata.drop_all)
+        for metadata in METADATA_TABLE_LIST:
+            await connect.run_sync(metadata.drop_all)
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:

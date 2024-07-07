@@ -64,7 +64,10 @@ async def add_new_dishaes_with_category(menu_id:int, list_of_dishies: List[AddDi
     verifeied_user = await user_is_osvov_restoraunt(restoraunt_id=restoraunt_id, current_user=current_user, session=session_param)
     if verifeied_user == 200:
         menu_id_for_orm = await get_menu_id_for_restoraunt(restoraunt_id=restoraunt_id, session=session_param)
-        menu_id_for_orm = int(menu_id_for_orm[0][0])
+        try:
+            menu_id_for_orm = int(menu_id_for_orm[0][0])
+        except:
+            raise HTTPException(status_code=404, detail='У данного ресторана пока нет меню.')
         if menu_id_for_orm == menu_id:
             category_on_menu = await get_category_for_menu(menu_id=menu_id, session=session_param)
             if category_id in category_on_menu:
