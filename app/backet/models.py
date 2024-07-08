@@ -15,5 +15,5 @@ BacketTable = Table(
     Column('user_id', ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False),
     #Предмет который человек добавил
     Column('item_id', ForeignKey(DishesModel.c.id, ondelete='RESTRICT'), nullable=False),
-    Column('order_id', ForeignKey(OrderTable.c.id, ondelete='RESTRICT'), nullable=True),
+    Column('order_id', ForeignKey(OrderTable.c.id, ondelete='SET NULL'), nullable=True),
 )

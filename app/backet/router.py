@@ -6,8 +6,10 @@ from .orm import *
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_async_session
 from fastapi.responses import ORJSONResponse
+from .utils import get_data_list_func
 router_backet = APIRouter()
 
+#Добавление в корзину
 @router_backet.post('/add_new_item_for_backet/{item_id}')
 async def add_new_item_for_backet(current_user: Annotated[User, Depends(get_current_user)], item_id:int, session_param: Annotated[AsyncSession, Depends(get_async_session)]):
     list_id_for_items_menu:list = await get_list_id_items(session=session_param)
@@ -17,23 +19,14 @@ async def add_new_item_for_backet(current_user: Annotated[User, Depends(get_curr
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Предмета с таким айди не найдено')
 
+
+
 @router_backet.get('/get_my_backet/')
 async def get_backet_for_user(current_user: Annotated[User, Depends(get_current_user)],session_param: Annotated[AsyncSession, Depends(get_async_session)]):
     items_for_backet = await get_raw_info_for_table(session=session_param, user_id=current_user.id)
     if items_for_backet:
-        itog_list_data: list = []
-        for one_item_for_bakcet in items_for_backet:
-            #Данные каждого элемента в корзине
-            data:list = {}
-            data['metainfo'] = {"backet_id" : one_item_for_bakcet['id'], 'user_id' : one_item_for_bakcet['user_id'], "item_id" :  one_item_for_bakcet['item_id'], 'order_id' : one_item_for_bakcet['order_id']}
-            #Добавление информации об самом item
-            item_info_orm = await get_info_for_orm(session=session_param, item_id=one_item_for_bakcet['item_id'])
-            item_info_orm = item_info_orm[0]
-            data['item_info'] = []
-            data['item_info'].append(item_info_orm)
-            itog_list_data.append(data)
+        itog_list_data: list = await get_data_list_func(items_for_backet, session_param)
         return itog_list_data
-            
     else:
         return ORJSONResponse(status_code=200, content={'content' : []}) 
 
