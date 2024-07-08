@@ -33,8 +33,9 @@ METADATA_TABLE_LIST = [
     metadata_for_table2_user,
     metadata_restoraunt,
     courier_metadata,
-    backet_metadata,
+
     orders_metadata,
+    backet_metadata,
 ]
 
 

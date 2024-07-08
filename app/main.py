@@ -19,7 +19,7 @@ async def lifespan_for_fastapi(app:FastAPI):
     #действия после запуска
     try:    
         await create_table()
-    except:
+    except ValueError:
         print('Таблицы уже созданы, можете начинать работу!')
     yield
     #Действия после выключения приложения

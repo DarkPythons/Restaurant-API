@@ -3,7 +3,7 @@ from sqlalchemy import (String, Integer, TIMESTAMP, Column,
 from auth.models import user
 from sqlalchemy.sql import func
 from restoraunt.models import DishesModel
-
+from orders.models import OrderTable
 backet_metadata = MetaData()
 
 BacketTable = Table(
@@ -11,10 +11,9 @@ BacketTable = Table(
     backet_metadata,
 
     Column('id', Integer, primary_key=True),
-    Column('in_order', Boolean, nullable=False),
     #Кому запись в backet принадлжеит 
     Column('user_id', ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False),
     #Предмет который человек добавил
-    Column('item_id', ForeignKey(DishesModel.c.id, ondelete='RESTRICT'), nullable=False)
-
+    Column('item_id', ForeignKey(DishesModel.c.id, ondelete='RESTRICT'), nullable=False),
+    Column('order_id', ForeignKey(OrderTable.c.id, ondelete='RESTRICT'), nullable=True),
 )
