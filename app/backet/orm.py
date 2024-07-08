@@ -24,3 +24,13 @@ async def get_info_for_orm(*, session:AsyncSession, item_id:int):
     query = select(DishesModel).where(DishesModel.c.id == item_id)
     result = await session.execute(query)
     return result.mappings().all()
+
+async def get_info_back_for_id(*,session:AsyncSession, backet_id:int):
+    query = select(BacketTable.c.user_id, BacketTable.c.order_id).where(BacketTable.c.id == backet_id)
+    result = await session.execute(query)
+    return result.mappings().all()
+
+async def delete_item_backet(*,session:AsyncSession, backet_id:int):
+    query = delete(BacketTable).where(BacketTable.c.id == backet_id)
+    await session.execute(query)
+    await session.commit()

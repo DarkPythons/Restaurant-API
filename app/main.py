@@ -11,6 +11,7 @@ from auth.schema import UserCreate, UserRead
 from restoraunt.routers import router as restoraunt_router
 from courier.routers import router_courier
 from backet.router import router_backet
+from orders.routers import router_order
 settings_app = BaseSettingForApp()
 
 
@@ -55,6 +56,12 @@ app.include_router(
     router_backet,
     prefix='/backet',
     tags=['Backet']
+)
+
+app.include_router(
+    router_order,
+    prefix='/orders',
+    tags=['Order']
 )
 
 fastapi_users_modules = FastAPIUsers[User, int](
