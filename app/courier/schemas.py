@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, EmailStr
 from enum import Enum
-
+from pydantic import BaseModel, Field
+from fastapi import Query
+from orders.schemas import StatusForOrder
 
 
 
@@ -15,9 +17,11 @@ class BaseCourierSchemas(BaseModel):
 class AddNewCourierShemas(BaseCourierSchemas):
     email: EmailStr = Field(min_length=5, max_length=100)
 
-    
 
 
 class ShowCourierSchemas(BaseCourierSchemas):
     id: int
     user_id: int
+
+class SelectStatus(BaseModel):
+    new_status: StatusForOrder = Field(Query())
