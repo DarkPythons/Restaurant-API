@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import ORJSONResponse
@@ -20,7 +20,7 @@ router_backet = APIRouter()
 @router_backet.post('/add_new_item_for_backet/{item_id}')
 async def add_new_item_for_backet(
     current_user: Annotated[User, Depends(get_current_user)],
-    item_id:int, 
+    item_id:Annotated[int, Path(title='Айди предмета', description='Введите айди предмета:', ge=1)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
     """Функция добавления элемента из меню любого ресторана по его id"""
@@ -46,7 +46,7 @@ async def get_backet_for_user(
     
 @router_backet.delete('/delete_item/{backet_id}')
 async def delete_one_item_bakcet(
-    backet_id:int, 
+    backet_id:Annotated[int, Path(title='Айди элемента корзины', description="Введите aйди элемента корзины:")], 
     current_user: Annotated[User, Depends(get_current_user)],
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):

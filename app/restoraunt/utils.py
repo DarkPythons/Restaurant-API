@@ -1,6 +1,7 @@
 from fastapi_users import FastAPIUsers
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException
+from fastapi import HTTPException, Path
+from enum import Enum
 
 from auth.auth import auth_backend
 from auth.manager import get_user_managers
@@ -12,6 +13,11 @@ from .orm import (
     get_contact_info_orm,get_menu_id_for_restoraunt,
     get_info_restoraunt_by_id
 )
+
+class PathParamsDescription(Enum):
+    restoraunt_id = Path(title="Айди ресторана", description="Введите айди ресторана:", ge=1)
+    menu_id = Path(title='Айди меню', description="Введите айди меню:", ge=1)
+    category_id = Path(title='Айди категории', description='Введите айди категории:', ge=1)
 
 
 fastapi_users_modules = FastAPIUsers[User, int](

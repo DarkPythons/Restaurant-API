@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from typing import Annotated, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import ORJSONResponse
@@ -23,7 +23,7 @@ from .orm import (
     get_info_for_restoraunt_orm,
 )
 from database import get_async_session
-from .utils import user_is_osvov_restoraunt, get_menu_id_func, get_info_title_rest
+from .utils import user_is_osvov_restoraunt, get_menu_id_func, get_info_title_rest, PathParamsDescription
 
 
 router = APIRouter()
@@ -48,7 +48,8 @@ async def create_new_restoraunt(
 
 
 @router.post('/add_menu_baseinfo/{restoraunt_id}')
-async def create_meny_baseinfo(restoraunt_id:int, 
+async def create_meny_baseinfo(
+    restoraunt_id: Annotated[int, PathParamsDescription.restoraunt_id.value], 
     current_user: Annotated[User, Depends(get_current_user)], 
     info_for_menu: AddMenuSchema, 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
@@ -74,8 +75,10 @@ async def create_meny_baseinfo(restoraunt_id:int,
 
 
 @router.post('/add_new_category/{restoraunt_id}/{menu_id}')
-async def create_category_menu(restoraunt_id:int, 
-    menu_id:int,info_category: AddNewCategorSchema,
+async def create_category_menu(
+    restoraunt_id:Annotated[int, PathParamsDescription.restoraunt_id.value], 
+    menu_id:Annotated[int, PathParamsDescription.menu_id.value],
+    info_category: AddNewCategorSchema,
     current_user: Annotated[User, Depends(get_current_user)],  
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
@@ -100,10 +103,12 @@ async def create_category_menu(restoraunt_id:int,
 
 
 @router.post('/add_new_dishaes/{restoraunt_id}/{menu_id}/{category_id}/')
-async def add_new_dishaes_with_category(menu_id:int, 
+async def add_new_dishaes_with_category(
+    menu_id:Annotated[int, PathParamsDescription.menu_id.value], 
     list_of_dishies: List[AddDishiesSchema],
-    restoraunt_id:int,
-    category_id:int, current_user: Annotated[User, Depends(get_current_user)],  
+    restoraunt_id:Annotated[int, PathParamsDescription.restoraunt_id.value],
+    category_id:Annotated[int, PathParamsDescription.category_id.value], 
+    current_user: Annotated[User, Depends(get_current_user)],  
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
     """Функция для добалвение нового блюда в меню, по айди ресторана, меню, категории, со всеми проверками"""
@@ -130,7 +135,7 @@ async def add_new_dishaes_with_category(menu_id:int,
     
 @router.post('/add_contact_info/{restoraunt_id}/')
 async def add_contact_info(contact_info: AddContantSchema,
-    restoraunt_id:int,
+    restoraunt_id:Annotated[int, PathParamsDescription.restoraunt_id.value],
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
@@ -147,10 +152,11 @@ async def add_contact_info(contact_info: AddContantSchema,
     else: 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
 
-
-
 @router.get('/get_info_restoraunt/{restoraunt_id}', response_model=ShowFullInfoRestoraunt)
-async def get_restoraunt_by_id(restoraunt_id: int, session_param: Annotated[AsyncSession, Depends(get_async_session)]):
+async def get_restoraunt_by_id(
+    restoraunt_id: Annotated[int, PathParamsDescription.restoraunt_id.value], 
+    session_param: Annotated[AsyncSession, Depends(get_async_session)]
+):
     """Фунция для получения полной информации по id ресторана"""
     base_result_by_search:list = await get_info_restoraunt_by_id(restoraunt_id=restoraunt_id, session=session_param)
     if base_result_by_search:
@@ -164,7 +170,10 @@ async def get_restoraunt_by_id(restoraunt_id: int, session_param: Annotated[Asyn
 
 
 @router.get('/get_info_for_restoaunt/{title}', response_model=ShowFullInfoRestoraunt)
-async def get_info_for_restoaunt(title:str, session_param: Annotated[AsyncSession, Depends(get_async_session)]):
+async def get_info_for_restoaunt(
+    title:Annotated[str, Path(title='Название ресторана', description='Введите название ресторана:')], 
+    session_param: Annotated[AsyncSession, Depends(get_async_session)]
+):
     """Функция для получение полной информации по названию ресторана"""
     id_for_restoraunt_by_id = await get_info_for_restoraunt_orm(title_rest=title, session=session_param)
     if id_for_restoraunt_by_id:

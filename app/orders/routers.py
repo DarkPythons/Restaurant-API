@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import ORJSONResponse
@@ -10,7 +10,7 @@ from .orm import (
     get_active_order_fo_user, 
     get_order_by_id,
     delete_order_by_id)
-from .utils import create_new_order_func
+from .utils import create_new_order_func, PathOrderDescription
 from database import get_async_session
 from .schemas import StatusForOrder
 
@@ -34,7 +34,7 @@ async def add_new_order(
     else:
         raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, 
-        detail='Вы не можете оформить заказ с пустой корзиной, или корзиной где уже активный заказ.'
+        detail='Вы не можете оформить заказ с пустой корзиной, или корзиной где только товары активных заказов.'
         )
     
 
@@ -50,7 +50,7 @@ async def get_my_active_order_list(
 
 @router_order.delete('/delete_my_order/{order_id}')
 async def delete_user_order_id(
-    order_id: int, 
+    order_id: Annotated[int, PathOrderDescription.order_id.value], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)], 
     current_user: Annotated[User, Depends(get_current_user)]
 ):

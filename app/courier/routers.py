@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from typing import Annotated
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,12 +8,13 @@ from auth.models import User
 from .schemas import AddNewCourierShemas, SelectStatus
 from .orm import *
 from database import get_async_session
+from orders.utils import PathOrderDescription
 
 router_courier = APIRouter()
 
 @router_courier.post('/add_new_courier/{user_id}')
 async def add_new_courier(
-    user_id:int, 
+    user_id:Annotated[int, Path(title='Айди пользователя', description='Введите айди пользователя из базы данных:', ge=1)], 
     current_user: Annotated[User, Depends(get_current_user)], 
     info_for_courier_add: AddNewCourierShemas, 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
@@ -69,7 +70,7 @@ async def get_my_verified_courier(
             await update_status_verified_user(session=session_param, user_id=current_user.id)
             return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : f'Ваш статус верификации обновлен'})
         else:
-            raise HTTPException(status_coded=status.HTTP_400_BAD_REQUEST, detail='Вы уже верифицированный курьер')
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Вы уже верифицированный курьер')
     else:
         raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -78,7 +79,7 @@ async def get_my_verified_courier(
 
 @router_courier.post('/take_order/{order_id}')
 async def take_order(
-    order_id:int,
+    order_id:Annotated[int, PathOrderDescription.order_id.value],
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
@@ -108,6 +109,7 @@ async def viev_order_user(
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
+    """Функция для получения информации об заказах, которые принадлежат курьеру."""
     courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
     if courier_info: 
         courier_info = courier_info[0]
@@ -152,7 +154,7 @@ async def get_order_all(
 
 @router_courier.put('/update_status_order/{order_id}')
 async def update_status_order(
-    order_id:int, 
+    order_id:Annotated[int, PathOrderDescription.order_id.value], 
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)], 
     new_status: SelectStatus = Depends()
