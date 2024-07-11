@@ -29,7 +29,7 @@ from .utils import user_is_osvov_restoraunt, get_menu_id_func, get_info_title_re
 router = APIRouter()
 
 
-@router.post('/create_new_restoraunt/', response_class=ORJSONResponse)
+@router.post('/create_new_restoraunt/', response_class=ORJSONResponse, summary='Create/upload new restoraunt')
 async def create_new_restoraunt(
     current_user: Annotated[User, Depends(get_current_user)], 
     restoraunt_info: AddNewRestoraunt, 
@@ -47,7 +47,7 @@ async def create_new_restoraunt(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Ресторан с таким названием уже есть!')
 
 
-@router.post('/add_menu_baseinfo/{restoraunt_id}')
+@router.post('/add_menu_baseinfo/{restoraunt_id}', summary='Add base info in menu')
 async def create_meny_baseinfo(
     restoraunt_id: Annotated[int, PathParamsDescription.restoraunt_id.value], 
     current_user: Annotated[User, Depends(get_current_user)], 
@@ -74,7 +74,7 @@ async def create_meny_baseinfo(
 
 
 
-@router.post('/add_new_category/{restoraunt_id}/{menu_id}')
+@router.post('/add_new_category/{restoraunt_id}/{menu_id}', summary='Add new category')
 async def create_category_menu(
     restoraunt_id:Annotated[int, PathParamsDescription.restoraunt_id.value], 
     menu_id:Annotated[int, PathParamsDescription.menu_id.value],
@@ -102,7 +102,7 @@ async def create_category_menu(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
 
 
-@router.post('/add_new_dishaes/{restoraunt_id}/{menu_id}/{category_id}/')
+@router.post('/add_new_dishaes/{restoraunt_id}/{menu_id}/{category_id}/', summary='Add new dishaes')
 async def add_new_dishaes_with_category(
     menu_id:Annotated[int, PathParamsDescription.menu_id.value], 
     list_of_dishies: List[AddDishiesSchema],
@@ -133,7 +133,7 @@ async def add_new_dishaes_with_category(
     else: 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
     
-@router.post('/add_contact_info/{restoraunt_id}/')
+@router.post('/add_contact_info/{restoraunt_id}/', summary="Add contact info")
 async def add_contact_info(contact_info: AddContantSchema,
     restoraunt_id:Annotated[int, PathParamsDescription.restoraunt_id.value],
     current_user: Annotated[User, Depends(get_current_user)], 
@@ -152,7 +152,7 @@ async def add_contact_info(contact_info: AddContantSchema,
     else: 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
 
-@router.get('/get_info_restoraunt/{restoraunt_id}', response_model=ShowFullInfoRestoraunt)
+@router.get('/get_info_restoraunt/{restoraunt_id}', response_model=ShowFullInfoRestoraunt, summary='View info restorunt by id')
 async def get_restoraunt_by_id(
     restoraunt_id: Annotated[int, PathParamsDescription.restoraunt_id.value], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
@@ -169,7 +169,7 @@ async def get_restoraunt_by_id(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Ресторана с таким id нет')
 
 
-@router.get('/get_info_for_restoaunt/{title}', response_model=ShowFullInfoRestoraunt)
+@router.get('/get_info_for_restoaunt/{title}', response_model=ShowFullInfoRestoraunt, summary="View info restoraunt")
 async def get_info_for_restoaunt(
     title:Annotated[str, Path(title='Название ресторана', description='Введите название ресторана:')], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]

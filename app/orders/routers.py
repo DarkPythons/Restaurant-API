@@ -17,13 +17,13 @@ from .schemas import StatusForOrder
 router_order = APIRouter()
 
 
-@router_order.post('/add_new_order/')
+@router_order.post('/add_new_order/', summary='Add new order in db')
 async def add_new_order(
     session_param: Annotated[AsyncSession, Depends(get_async_session)], 
     current_user: Annotated[User, Depends(get_current_user)], 
     address: str
 ):
-    """Функция для созданая заказа, при которой все товары из корзины становятся товаром из заказа"""
+    """Функция для создания заказа, при которой все товары из корзины становятся товаром из заказа"""
     item_backet_for_user_no_active_order = await get_backet_item_for_user_id(session=session_param, user_id=current_user.id)
     if item_backet_for_user_no_active_order:
         await create_new_order_func(item_backet_for_user_no_active_order, session_param, current_user, address)
@@ -38,7 +38,7 @@ async def add_new_order(
         )
     
 
-@router_order.get('/viev_my_active_order/')
+@router_order.get('/view_my_active_order/', summary='View my active order')
 async def get_my_active_order_list(
     session_param: Annotated[AsyncSession, Depends(get_async_session)], 
     current_user: Annotated[User, Depends(get_current_user)]
@@ -48,7 +48,7 @@ async def get_my_active_order_list(
     return {'active_order' : active_order_user}
 
 
-@router_order.delete('/delete_my_order/{order_id}')
+@router_order.delete('/delete_my_order/{order_id}', summary='Delete order by order_id')
 async def delete_user_order_id(
     order_id: Annotated[int, PathOrderDescription.order_id.value], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)], 

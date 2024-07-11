@@ -12,7 +12,7 @@ from orders.utils import PathOrderDescription
 
 router_courier = APIRouter()
 
-@router_courier.post('/add_new_courier/{user_id}')
+@router_courier.post('/add_new_courier/{user_id}', summary='Add new courier')
 async def add_new_courier(
     user_id:Annotated[int, Path(title='Айди пользователя', description='Введите айди пользователя из базы данных:', ge=1)], 
     current_user: Annotated[User, Depends(get_current_user)], 
@@ -39,7 +39,7 @@ async def add_new_courier(
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет прав на добавление курьеров.')
 
-@router_courier.post('/update_my_status_work/')
+@router_courier.post('/update_my_status_work/', summary='Update my status work')
 async def update_my_status_work(
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)], 
@@ -57,7 +57,7 @@ async def update_my_status_work(
         detail='Вы не являетесь курьером, поэтому не можете обновлять статус работы.'
         )
     
-@router_courier.post("/verified_my_courier_account/")
+@router_courier.post("/verified_my_courier_account/", summary='Verify my courier account')
 async def get_my_verified_courier(
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
@@ -77,7 +77,7 @@ async def get_my_verified_courier(
         detail='Вы не являетесь курьером, поэтому не можете получить верификацию для курьеров.'
         )
 
-@router_courier.post('/take_order/{order_id}')
+@router_courier.post('/take_order/{order_id}', summary='Take order by id')
 async def take_order(
     order_id:Annotated[int, PathOrderDescription.order_id.value],
     current_user: Annotated[User, Depends(get_current_user)], 
@@ -104,7 +104,7 @@ async def take_order(
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете взять заказ.')  
 
-@router_courier.get('/get_my_active_order/')
+@router_courier.get('/get_my_active_order/', summary='Get my active orders')
 async def viev_order_user(
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
@@ -119,7 +119,7 @@ async def viev_order_user(
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете взять заказ.')  
 
-@router_courier.get('/get_info_account')
+@router_courier.get('/get_info_account', summary='Get info my courier account')
 async def get_my_info_account(
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
@@ -135,7 +135,7 @@ async def get_my_info_account(
         detail='Вы не являетесь курьером, поэтому не можете получить информацию об аккаунте курьерa.'
         )    
 
-@router_courier.get('/get_orders_all/')
+@router_courier.get('/get_orders_all/', summary='Get all my orders')
 async def get_order_all(
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
@@ -152,7 +152,7 @@ async def get_order_all(
         )    
 
 
-@router_courier.put('/update_status_order/{order_id}')
+@router_courier.put('/update_status_order/{order_id}', summary='Update status my orders')
 async def update_status_order(
     order_id:Annotated[int, PathOrderDescription.order_id.value], 
     current_user: Annotated[User, Depends(get_current_user)], 
