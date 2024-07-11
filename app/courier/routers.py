@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Query
-from .utils import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, status
+from .utils import get_current_user, create_message, get_info_func
 from auth.models import User
 from typing import Annotated
 from .schemas import AddNewCourierShemas, SelectStatus
@@ -32,15 +32,15 @@ async def add_new_courier(user_id:int, current_user: Annotated[User, Depends(get
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Человека с таким id нет в таблице юзеров.')
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет прав на добавление курьеров.')
-    
+
+
+
 @router_courier.post('/update_my_status_work/')
 async def update_my_status_work(current_user: Annotated[User, Depends(get_current_user)], session_param: Annotated[AsyncSession, Depends(get_async_session)], in_work: bool):
     courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
     if courier_info:
         await update_info_for_table_courier(session=session_param, user_id=current_user.id, in_work=in_work)
-        message = 'Не в работе'
-        if in_work:
-            message = 'В работе'
+        message = await create_message(in_work)
         return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : f'Ваш статус работы обновлен на: {message}'})
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете обновлять статус работы.')
@@ -59,36 +59,6 @@ async def get_my_verified_courier(current_user: Annotated[User, Depends(get_curr
             raise HTTPException(status_coded=status.HTTP_400_BAD_REQUEST, detail='Вы уже верифицированный курьер')
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете получить верификацию для курьеров.')
-
-
-@router_courier.get('/get_info_account')
-async def get_my_info_account(current_user: Annotated[User, Depends(get_current_user)], session_param: Annotated[AsyncSession, Depends(get_async_session)]):
-    courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
-    if courier_info:
-        courier_info = courier_info[0]
-        data_info = {
-        "first_name" : courier_info['first_name'],
-        "last_name" : courier_info['last_name'],
-        "phone" : courier_info['phone'],
-        "in_work" : courier_info['in_work'],
-        "verified" : courier_info['verified'],
-        "email" : courier_info['email'],
-        }
-        return {'account_info' : data_info}
-    else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете получить информацию об аккаунте курьерa.')    
-
-
-#Получение информации по свободным заказам, которые можно взять
-@router_courier.get('/get_orders_all/')
-async def get_order_all(current_user: Annotated[User, Depends(get_current_user)], session_param: Annotated[AsyncSession, Depends(get_async_session)]):
-    courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
-    if courier_info:
-        result = await get_order_all_no_courier(session=session_param)
-        return result
-    else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете получать информацию об свободных заказах.')    
-
 
 
 @router_courier.post('/take_order/{order_id}')
@@ -122,6 +92,28 @@ async def viev_order_user(current_user: Annotated[User, Depends(get_current_user
         return all_active_order
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете взять заказ.')  
+
+
+@router_courier.get('/get_info_account')
+async def get_my_info_account(current_user: Annotated[User, Depends(get_current_user)], session_param: Annotated[AsyncSession, Depends(get_async_session)]):
+    courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
+    if courier_info:
+        data_info = await get_info_func(courier_info)
+        return {'account_info' : data_info}
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете получить информацию об аккаунте курьерa.')    
+
+
+#Получение информации по свободным заказам, которые можно взять
+@router_courier.get('/get_orders_all/')
+async def get_order_all(current_user: Annotated[User, Depends(get_current_user)], session_param: Annotated[AsyncSession, Depends(get_async_session)]):
+    courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
+    if courier_info:
+        result = await get_order_all_no_courier(session=session_param)
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете получать информацию об свободных заказах.')    
+
 
 
 

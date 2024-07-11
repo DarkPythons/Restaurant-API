@@ -1,15 +1,11 @@
-from sqlalchemy import (String, Integer, TIMESTAMP, Column,
-    Boolean, MetaData, ForeignKey, Table, FLOAT)
+from sqlalchemy import (String, Integer, Column,
+    MetaData, ForeignKey, Table, FLOAT)
+
 from auth.models import user
-
-
 
 metadata_restoraunt = MetaData()
 
-
-
-
-
+#Модель меню 
 MenuModel = Table(
     'menu',
     metadata_restoraunt,
@@ -20,7 +16,7 @@ MenuModel = Table(
     Column('restoraunt_id', Integer, ForeignKey('restorunt.id', ondelete='RESTRICT'), nullable=False, unique=True)
 )
 
-#Модель создания ресторана
+#Модель ресторана
 Restoraunt = Table(
     'restorunt',
     metadata_restoraunt,
@@ -35,10 +31,7 @@ Restoraunt = Table(
     Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'), nullable=True)
 )
 
-
-
-
-
+#Модель контакной информации
 ContactModel = Table(
     'contact',
     metadata_restoraunt,
@@ -51,9 +44,7 @@ ContactModel = Table(
     Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False, unique=True)
 )
 
-
-
-
+#Модель категорий
 CategoryModel = Table(
     'category',
     metadata_restoraunt,
@@ -65,9 +56,7 @@ CategoryModel = Table(
     Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False)
 )
 
-
-
-
+#Модель блюд
 DishesModel = Table(
     'dishes',
     metadata_restoraunt,
