@@ -1,8 +1,10 @@
 from fastapi_users import FastAPIUsers
+
 from auth.auth import auth_backend
 from auth.manager import get_user_managers
 from auth.models import User
 from .orm import get_info_for_orm
+
 fastapi_users_modules = FastAPIUsers[User, int](
     get_user_manager=get_user_managers,
     auth_backends=[auth_backend]
