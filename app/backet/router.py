@@ -57,9 +57,15 @@ async def delete_one_item_bakcet(
         if backet_item_user['user_id'] == current_user.id:
             if not backet_item_user['order_id']:
                 await delete_item_backet(backet_id=backet_id, session=session_param)
-                return ORJSONResponse(status_code=200, content={f'content' : f'Вы успешно удалили элемент корзины с айди: {backet_id}'}) 
+                return ORJSONResponse(
+                    status_code=200, 
+                    content={f'content' : f'Вы успешно удалили элемент корзины с айди: {backet_id}'}
+                    ) 
             else:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Вы пытается удалить элемент корзины, который есть в действующем заказе.')
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, 
+                    detail='Вы пытается удалить элемент корзины, который есть в действующем заказе.'
+                    )
         else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы пытаетесь удалить элемент чужой корзины.')
     else:

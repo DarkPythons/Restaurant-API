@@ -1,5 +1,5 @@
-from sqlalchemy import (String, Integer, TIMESTAMP, Column,
-    Boolean, MetaData, ForeignKey, Table, FLOAT)
+from sqlalchemy import (String, Integer, Column,
+    Boolean, MetaData, ForeignKey, Table)
 from auth.models import user
 
 courier_metadata = MetaData()

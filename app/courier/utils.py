@@ -1,4 +1,5 @@
 from fastapi_users import FastAPIUsers
+
 from auth.auth import auth_backend
 from auth.manager import get_user_managers
 from auth.models import User
@@ -12,12 +13,14 @@ get_current_user = fastapi_users_modules.current_user()
 
 
 async def create_message(in_work):
+    """Функия формирования ответа для соответствуюего запроса курьера"""
     message = 'Не в работе'
     if in_work:
         message = 'В работе'
     return message
 
 async def get_info_func(couriers_info):
+    """Фукнция преобразования полученных данных о курьере"""
     courier_info = couriers_info[0]
     data_info = {
     "first_name" : courier_info['first_name'],

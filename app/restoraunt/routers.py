@@ -39,7 +39,10 @@ async def create_new_restoraunt(
     list_restoraunt_title = await get_list_title_restoraunt(session=session_param)
     if not restoraunt_info.title in list_restoraunt_title:
         await create_restoraunt_orm(**restoraunt_info.model_dump(), user_id=current_user.id, session=session_param)
-        return ORJSONResponse(content={'content' : f'Ресторан с названием {restoraunt_info.title} успешно добавлен в базу!'}, status_code=status.HTTP_201_CREATED)
+        return ORJSONResponse(
+        content={'content' : f'Ресторан с названием {restoraunt_info.title} успешно добавлен в базу!'}, 
+        status_code=status.HTTP_201_CREATED
+        )
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Ресторан с таким названием уже есть!')
 
@@ -62,7 +65,10 @@ async def create_meny_baseinfo(restoraunt_id:int,
     elif verifeied_user == 'Not restoraunt':
         raise HTTPException(status_code=404, detail='Ресторана с таким id не найдено.')
     else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
+        raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, 
+        detail='У вас нет доступа на изменение информации этого ресторана'
+        )
 
 
 
@@ -78,7 +84,12 @@ async def create_category_menu(restoraunt_id:int,
     if verifeied_user == 200:
         menu_id_for_orm = await get_menu_id_func(restoraunt_id=restoraunt_id, session_param=session_param)
         if menu_id_for_orm == menu_id:
-            await add_new_category_for_menu(**info_category.model_dump(),  session=session_param, menu_id=menu_id_for_orm, restoraunt_id=restoraunt_id)
+            await add_new_category_for_menu(
+            **info_category.model_dump(),  
+            session=session_param, 
+            menu_id=menu_id_for_orm, 
+            restoraunt_id=restoraunt_id
+            )
             return ORJSONResponse(content={"content" : "Создаение категории произошло успешно!"}, status_code=status.HTTP_201_CREATED)
         else:
             raise HTTPException(status_code=404, detail='У данного ресторана не такой menu_id.')
