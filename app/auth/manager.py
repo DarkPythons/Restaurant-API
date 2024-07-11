@@ -3,6 +3,7 @@ from fastapi_users import BaseUserManager, IntegerIDMixin, models, schemas,excep
 from config import SettingsForTokenJWT
 from typing import Optional,Annotated
 from fastapi import Depends, Request
+
 from auth.models import User
 from auth.auth import auth_backend
 from database import get_user_db

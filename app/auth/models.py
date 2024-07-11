@@ -1,10 +1,9 @@
-from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
+from fastapi_users.db import SQLAlchemyBaseUserTable
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String,Boolean, MetaData, Column, Table
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
-from typing import Annotated
+
+
 
 
 
