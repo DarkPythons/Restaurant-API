@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import Field, EmailStr
 from dotenv import load_dotenv, find_dotenv
 import os
 
@@ -39,6 +39,20 @@ class SettingsForTokenJWT(BaseConfigClassInFile):
 class BaseSettingsConfig(BaseConfigClassInFile):
     PROJECT_IS_PROCESS_DEBUG: bool = Field(default=True)
     HTTP_OR_HTTPS: str = Field(default='http')
+
+class RassilkaBaseConfig(BaseConfigClassInFile):
+    RASSILKA_IN_EMAIL: bool = Field(default=False)
+
+class CeleryConfigSettings(BaseConfigClassInFile):
+    SMTP_USER:EmailStr = Field()
+    SMTP_PASSWORD:str = Field(default='password')
+    SMTP_HOST:str=Field(default='smtp.gmail.com')
+    SMTP_PORT:int=Field(default=465)
+
+#В default указаны настройки для локального включения, на сервере они будут совсем другие
+class RedisConfigSettings(BaseConfigClassInFile):
+    REDIS_HOST:str=Field(default='localhost')
+    REDIS_PORT:int=Field(default=6379)
 
 
 description = """

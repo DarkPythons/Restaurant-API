@@ -12,6 +12,18 @@ fastapi_users_modules = FastAPIUsers[User, int](
 get_current_user = fastapi_users_modules.current_user()
 
 
+def get_slovar_dates(*,courier_info, order_info):
+    slovar_data = [{
+        "email_courier" : courier_info['email'],
+        "first_name_courier" : courier_info['first_name'],
+        "last_name_courier" : courier_info['last_name'],
+        "price_order":order_info['price_order'],
+        "address_order":order_info['address'],
+        "order_id":order_info['order_id'],
+        "user_id":order_info['user_id'],
+    }]
+    return slovar_data
+
 async def create_message(in_work):
     """Функия формирования ответа для соответствуюего запроса курьера"""
     message = 'Не в работе'

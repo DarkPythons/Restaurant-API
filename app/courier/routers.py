@@ -3,12 +3,16 @@ from typing import Annotated
 from fastapi.responses import ORJSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .utils import get_current_user, create_message, get_info_func
+from config import RassilkaBaseConfig
+from .utils import get_current_user, create_message, get_info_func, get_slovar_dates
 from auth.models import User
 from .schemas import AddNewCourierShemas, SelectStatus
 from .orm import *
 from database import get_async_session
 from orders.utils import PathOrderDescription
+from .celery_config import send_email_message_courier
+
+rassilka_config = RassilkaBaseConfig()
 
 router_courier = APIRouter()
 
@@ -30,7 +34,8 @@ async def add_new_courier(
                 user_info:dict= user_id_is_not_null[0]
                 return ORJSONResponse(
                 status_code=status.HTTP_201_CREATED, 
-                content={'content' : f'Пользователь {user_info['first_name']} {user_info['last_name']}, с айди {user_id} был добавлен в таблицу курьеров'}
+                content={'content' : f'Пользователь {user_info['first_name']} {user_info['last_name']}, \
+                с айди {user_id} был добавлен в таблицу курьеров'}
                 )
             else:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Человек с этим id уже явялется курьером')
@@ -124,7 +129,7 @@ async def get_my_info_account(
     current_user: Annotated[User, Depends(get_current_user)], 
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
-    """Функция для получения информации о профиле курьера (активные заказы, телефон, mail и тд.)"""
+    """Функция для получения информации о профиле курьера (телефон, mail и тд.)"""
     courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
     if courier_info:
         data_info = await get_info_func(courier_info)
@@ -169,11 +174,19 @@ async def update_status_order(
             order_info = order_info[0]
             if order_info['status'] != 'Доставлен':
                 await update_status_this_order(order_id=order_id, session=session_param, status=new_stat)
-                return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : 'Вы успешно обновили статус заказа'})
+                try:
+                    #Если рассылка включена
+                    if rassilka_config.RASSILKA_IN_EMAIL:
+                        if new_stat == 'Доставлен':
+                            slovar_data = get_slovar_dates(courier_info=courier_info,order_info=order_info)
+                            send_email_message_courier.apply_async(args=(slovar_data))
+                except:
+                    pass
+                return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : 'Вы успешно обновили статус заказа.'})
             else:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Вы не можете изменять статус доставленных заказов')
         else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Заказа с таким id нет, или у вас нет заказа с таким id')
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Заказа с таким id нет, или у вас лично нет заказа с таким id')
     else:
         raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
