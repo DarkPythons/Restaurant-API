@@ -36,3 +36,13 @@ async def delete_order_by_id(*, order_id:int, session:AsyncSession):
     query = delete(OrderTable).where(OrderTable.c.id == order_id)
     await session.execute(query)
     await session.commit()
+
+async def get_order_user_by_orderId(*, session:AsyncSession,order_id:int,user_id:int):
+    query = select(OrderTable).where(and_(OrderTable.c.id == order_id), OrderTable.c.user_id == user_id)
+    result = await session.execute(query)
+    return result.mappings().all()
+
+async def get_full_item_from_backet_table(*, session: AsyncSession, order_id: int):
+    query = select(BacketTable).where(BacketTable.c.order_id == order_id)
+    result = await session.execute(query)
+    return result.mappings().all()

@@ -3,13 +3,15 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import ORJSONResponse
 
-from .utils import get_current_user
+from .utils import get_current_user, get_spisok_order_full_func
 from auth.models import User
 from .orm import (
     get_backet_item_for_user_id, 
     get_active_order_fo_user, 
     get_order_by_id,
-    delete_order_by_id)
+    get_order_user_by_orderId,
+    delete_order_by_id,
+    )
 from .utils import create_new_order_func, PathOrderDescription
 from database import get_async_session
 from .schemas import StatusForOrder
@@ -72,3 +74,19 @@ async def delete_user_order_id(
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='у вас нет прав на отмену чужик заказов')
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Заказа с таким id не найдено')
+
+@router_order.get('/view_full_info_order/{order_id}')
+async def view_full_info(
+    order_id: Annotated[int, PathOrderDescription.order_id.value], 
+    session_param: Annotated[AsyncSession, Depends(get_async_session)], 
+    current_user: Annotated[User, Depends(get_current_user)]
+):
+    """Функция для получения полной информации по id заказа"""
+    order_info = await get_order_user_by_orderId(session=session_param, order_id=order_id, user_id=current_user.id)
+    if order_info:
+        order_info = order_info[0]
+        data_full_spisok = await get_spisok_order_full_func(order_info=order_info, session=session_param, order_id=order_id)
+        data_itog = {"order_info" : order_info, 'full_data_for_items' : data_full_spisok}
+        return data_itog
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Вашего активного заказа с таким id не найдено")

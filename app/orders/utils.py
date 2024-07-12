@@ -1,11 +1,13 @@
 from fastapi_users import FastAPIUsers
 from enum import Enum
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Path
 
 from auth.auth import auth_backend
 from auth.manager import get_user_managers
 from auth.models import User
-from .orm import add_new_order_for_db,update_data_bakcet
+from .orm import add_new_order_for_db,update_data_bakcet,get_full_item_from_backet_table
+from backet.utils import get_data_list_func
 from backet.orm import get_info_for_orm
 
 
@@ -43,3 +45,10 @@ async def create_new_order_func(item_backet_for_user_no_active_order, session_pa
     order_id:int = order_id[0]
     #Обновление данных в корнизе 
     await update_data_bakcet(session=session_param, user_id=current_user.id, order_id=order_id)
+
+
+async def get_spisok_order_full_func(order_info,session:AsyncSession,order_id:int):
+    list_full_items_for_order = await get_full_item_from_backet_table(session=session, order_id=order_id)
+    #Получение списка полной информации по каждому предмету из заказа
+    data_full_spisok = await get_data_list_func(list_full_items_for_order,session)
+    return data_full_spisok
