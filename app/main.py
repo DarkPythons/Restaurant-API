@@ -5,7 +5,7 @@ from fastapi_users import FastAPIUsers
 from fastapi.middleware.cors import CORSMiddleware
 import time
 
-from config import BaseSettingForApp, BaseSettingsConfig
+from config import BaseSettingForApp, BaseSettingsConfig, description, tags_metadata
 from database import create_table, delete_table
 from auth.models import User
 from auth.auth import auth_backend
@@ -34,12 +34,28 @@ async def lifespan_for_fastapi(app:FastAPI):
 
 
 
+
 app = FastAPI(
     title=settings_app.NAME_APP,
     version=settings_app.VERSION_APP,
     docs_url='/docs',
     redoc_url='/redoc',
-    lifespan=lifespan_for_fastapi
+    lifespan=lifespan_for_fastapi,
+    description=description,
+    summary='API приложения по доставке еды',
+    contact={
+        #Кастомные настройки контактов
+        "name" : 'Creator',
+        'url' : 'https://github.com/VoblaSuperFish',
+    },
+    license_info={
+        #Информация об подключенных лицензиях
+        'name' : 'MIT Licenses',
+        'url' : 'https://mit-license.org/'
+    },
+    openapi_tags=tags_metadata,
+    #Изменение подсветки синтаксиса
+    swagger_ui_parameters={'syntaxHighlight.theme' : 'obsidian'}
 )
 
 
@@ -101,4 +117,11 @@ async def add_time_process_in_header(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers['X-Process-Time'] = str(process_time)
+
+    
+    #Получить хост и порт обратившегося человека
+    #Получить хост клиента
+    client_host = request.client.host
+    #Получить порт клиента
+    client_port = request.client.port
     return response
