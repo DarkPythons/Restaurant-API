@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from config import BaseSettingForApp
 from contextlib import asynccontextmanager
-from config import PROJECT_IS_PROCESS_DEBUG
-from database import create_table, delete_table
 from fastapi_users import FastAPIUsers
+from fastapi.middleware.cors import CORSMiddleware
+import time
+
+from config import BaseSettingForApp, BaseSettingsConfig
+from database import create_table, delete_table
 from auth.models import User
 from auth.auth import auth_backend
 from auth.manager import get_user_managers
@@ -13,7 +16,7 @@ from courier.routers import router_courier
 from backet.router import router_backet
 from orders.routers import router_order
 settings_app = BaseSettingForApp()
-
+conifgs_app = BaseSettingsConfig()
 
 @asynccontextmanager
 async def lifespan_for_fastapi(app:FastAPI):
@@ -25,7 +28,7 @@ async def lifespan_for_fastapi(app:FastAPI):
     yield
     #Действия после выключения приложения
     #Если проект в режиме разработки, после работы удалить все таблицы:
-    if PROJECT_IS_PROCESS_DEBUG:
+    if conifgs_app.PROJECT_IS_PROCESS_DEBUG:
         await delete_table()
 
 
@@ -64,15 +67,38 @@ app.include_router(
     tags=['Order']
 )
 
+
+
+app.add_middleware(
+    CORSMiddleware,
+    #Разрешенные хоста, которые могут обращаться к API
+    allow_origins=['*'],
+    #Использование файлов Cookie и Authorization
+    allow_credentials=True,
+    #Разрашенные методы которые могут поступать с разрашенных хостов
+    allow_methods=['*'],
+    #Разрашенные заголовки
+    allow_headers=['*'],
+)
+
 fastapi_users_modules = FastAPIUsers[User, int](
     get_user_manager=get_user_managers,
     auth_backends=[auth_backend]
 )
 
-#Фукнция для аунтефикации пользовател, также нужно указать auth_backend (модель что выдавать юзеру, в нашем случае JWT) 
+#ручка для аунтефикации пользовател, также нужно указать auth_backend (модель что выдавать юзеру, в нашем случае JWT) 
 app.include_router(fastapi_users_modules.get_auth_router(auth_backend), prefix='/auth', tags=['Auth'])
-#Функция для Регистрации и получения информации по юзеру
+#Добавление ручки для регистрации
 app.include_router(fastapi_users_modules.get_register_router(UserRead, UserCreate), prefix='/auth', tags=['Auth'])
-#Функция для получения корректного юзера
 
 
+
+#Добалвение middleware, который перехватывает запросы http/https и добавляет к ним время выполнения операции
+@app.middleware(conifgs_app.HTTP_OR_HTTPS)
+async def add_time_process_in_header(request: Request, call_next):
+    start_time = time.time()
+    #Вызов функции к которой шёл запрос с параметрами
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers['X-Process-Time'] = str(process_time)
+    return response

@@ -1,17 +1,18 @@
-#Файл настройки базы данных
-from config import DataBaseSettingPostgre, PROJECT_IS_PROCESS_DEBUG
-from auth.models import Bases_meta, metadata_for_table2_user
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
+from fastapi_users.db import SQLAlchemyUserDatabase
 from fastapi import Depends 
 from typing import Annotated
+
+from config import DataBaseSettingPostgre
+from auth.models import Bases_meta, metadata_for_table2_user
 from auth.models import User
 from restoraunt.models import metadata_restoraunt
 from courier.models import courier_metadata
 from backet.models import backet_metadata
 from orders.models import orders_metadata
+
 database_settings = DataBaseSettingPostgre()
 
 #url базы данных
