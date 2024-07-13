@@ -11,7 +11,7 @@ from .schemas import (
     AddDishiesSchema, AddContantSchema
 )
 from .orm import (
-    get_list_title_restoraunt,
+    get_title_restoraunt,
     create_restoraunt_orm,
     get_restaraunt_menu,
     add_new_info_for_menu,
@@ -24,7 +24,7 @@ from .orm import (
 )
 from database import get_async_session
 from .utils import user_is_osvov_restoraunt, get_menu_id_func, get_info_title_rest, PathParamsDescription
-
+from baselog import custom_log_app, generate_response_error
 
 router = APIRouter()
 
@@ -36,13 +36,17 @@ async def create_new_restoraunt(
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
     """Функция для добавления ресторана"""
-    list_restoraunt_title = await get_list_title_restoraunt(session=session_param)
-    if not restoraunt_info.title in list_restoraunt_title:
-        await create_restoraunt_orm(**restoraunt_info.model_dump(), user_id=current_user.id, session=session_param)
-        return ORJSONResponse(
-        content={'content' : f'Ресторан с названием {restoraunt_info.title} успешно добавлен в базу!'}, 
-        status_code=status.HTTP_201_CREATED
-        )
+    restoraunt_title_in_db = await get_title_restoraunt(session=session_param, title=restoraunt_info.title)
+    if not restoraunt_title_in_db:
+        try:
+            await create_restoraunt_orm(**restoraunt_info.model_dump(), user_id=current_user.id, session=session_param)
+            custom_log_app.info(f"Ресторан с названием {restoraunt_info.title} был добавлен в базу.")
+            return ORJSONResponse(
+            content={'content' : f'Ресторан с названием {restoraunt_info.title} успешно добавлен в базу!'}, 
+            status_code=status.HTTP_201_CREATED
+            )
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Ресторан с таким названием уже есть!')
 
@@ -59,8 +63,12 @@ async def create_meny_baseinfo(
     if verifeied_user == 200:
         restaraunt_menu = await get_restaraunt_menu(restoraunt_id=restoraunt_id, session=session_param)
         if restaraunt_menu == (None,):
-            await add_new_info_for_menu(restoraunt_id=restoraunt_id, **info_for_menu.model_dump(), session=session_param)
-            return ORJSONResponse(content={"content" : "Создание объекта меню произошло успешно!"}, status_code=status.HTTP_201_CREATED)
+            try:
+                await add_new_info_for_menu(restoraunt_id=restoraunt_id, **info_for_menu.model_dump(), session=session_param)
+                custom_log_app.info(f"Меню для ресторана с id {restoraunt_id} было добавлено")
+                return ORJSONResponse(content={"content" : "Создание объекта меню произошло успешно!"}, status_code=status.HTTP_201_CREATED)
+            except Exception as Error:
+                await generate_response_error(Error)
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='У вашего ресторана уже есть меню.')
     elif verifeied_user == 'Not restoraunt':
@@ -87,13 +95,17 @@ async def create_category_menu(
     if verifeied_user == 200:
         menu_id_for_orm = await get_menu_id_func(restoraunt_id=restoraunt_id, session_param=session_param)
         if menu_id_for_orm == menu_id:
-            await add_new_category_for_menu(
-            **info_category.model_dump(),  
-            session=session_param, 
-            menu_id=menu_id_for_orm, 
-            restoraunt_id=restoraunt_id
-            )
-            return ORJSONResponse(content={"content" : "Создаение категории произошло успешно!"}, status_code=status.HTTP_201_CREATED)
+            try:
+                await add_new_category_for_menu(
+                **info_category.model_dump(),  
+                session=session_param, 
+                menu_id=menu_id_for_orm, 
+                restoraunt_id=restoraunt_id
+                )
+                custom_log_app.info(f"Произошло добавление новой категории в меню с id {menu_id}")
+                return ORJSONResponse(content={"content" : "Создаение категории произошло успешно!"}, status_code=status.HTTP_201_CREATED)
+            except Exception as Error:
+                await generate_response_error(Error)
         else:
             raise HTTPException(status_code=404, detail='У данного ресторана не такой menu_id.')
     elif verifeied_user == 'Not restoraunt':
@@ -118,12 +130,16 @@ async def add_new_dishaes_with_category(
         if menu_id_for_orm == menu_id:
             category_on_menu = await get_category_for_menu(menu_id=menu_id, session=session_param)
             if category_id in category_on_menu:
-                await add_new_dishaes_on_category(list_of_dishies=list_of_dishies, 
-                session=session_param, 
-                category_id=category_id,
-                restoraunt_id=restoraunt_id,
-                menu_id=menu_id)
-                return ORJSONResponse(content={"content" : "Занесение блюда в меню произошло успешно!"}, status_code=status.HTTP_201_CREATED)
+                try:
+                    await add_new_dishaes_on_category(list_of_dishies=list_of_dishies, 
+                    session=session_param, 
+                    category_id=category_id,
+                    restoraunt_id=restoraunt_id,
+                    menu_id=menu_id)
+                    custom_log_app.info(f"Добавление нового блюда в меню с id {menu_id} прошло успешно.")
+                    return ORJSONResponse(content={"content" : "Занесение блюда в меню произошло успешно!"}, status_code=status.HTTP_201_CREATED)
+                except Exception as Error:
+                    await generate_response_error(Error)
             else:
                 raise HTTPException(status_code=404, detail='Категории с таким id в данном меню не найдено.')
         else:
@@ -131,7 +147,8 @@ async def add_new_dishaes_with_category(
     elif verifeied_user == 'Not restoraunt':
         raise HTTPException(status_code=404, detail='Ресторана с таким id не найдено.')
     else: 
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на \
+        изменение информации этого ресторана')
     
 @router.post('/add_contact_info/{restoraunt_id}/', summary="Add contact info")
 async def add_contact_info(contact_info: AddContantSchema,
@@ -145,12 +162,18 @@ async def add_contact_info(contact_info: AddContantSchema,
         contact_info_for_restoraunt = await get_contact_info(session=session_param, restoraunt_id=restoraunt_id)
         if contact_info_for_restoraunt:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='У вас уже есть контактная информация')
-        await add_new_contact_info_for_restorant(**contact_info.model_dump(), restoraunt_id=restoraunt_id, session=session_param)
-        return ORJSONResponse(content={"content" : "Добавление контактной информации успешно произошло!"}, status_code=status.HTTP_201_CREATED)
+        try:
+            await add_new_contact_info_for_restorant(**contact_info.model_dump(), restoraunt_id=restoraunt_id, session=session_param)
+            custom_log_app.info(f"Добавление контактной информации для ресторана с id {restoraunt_id} прошло успешно.")
+            return ORJSONResponse(content={"content" : "Добавление контактной информации успешно произошло!"}, \
+                status_code=status.HTTP_201_CREATED)
+        except Exception as Error:
+            await generate_response_error(Error)     
     elif verifeied_user == 'Not restoraunt':
         raise HTTPException(status_code=404, detail='Ресторана с таким id не найдено.')
     else: 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='У вас нет доступа на изменение информации этого ресторана')
+
 
 @router.get('/get_info_restoraunt/{restoraunt_id}', response_model=ShowFullInfoRestoraunt, summary='View info restorunt by id')
 async def get_restoraunt_by_id(
@@ -160,11 +183,15 @@ async def get_restoraunt_by_id(
     """Фунция для получения полной информации по id ресторана"""
     base_result_by_search:list = await get_info_restoraunt_by_id(restoraunt_id=restoraunt_id, session=session_param)
     if base_result_by_search:
-        data_itog = await get_data_itog_for_restoraunt(
-            restoraunt_id=restoraunt_id, session=session_param, 
-            base_result_by_search=base_result_by_search
-            )
-        return data_itog
+        try:
+            data_itog = await get_data_itog_for_restoraunt(
+                restoraunt_id=restoraunt_id, session=session_param, 
+                base_result_by_search=base_result_by_search
+                )
+            custom_log_app.info(f"Получение информации по ресторану с id {restoraunt_id} произошло успешно.")
+            return data_itog
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Ресторана с таким id нет')
 
@@ -177,8 +204,12 @@ async def get_info_for_restoaunt(
     """Функция для получение полной информации по названию ресторана"""
     id_for_restoraunt_by_id = await get_info_for_restoraunt_orm(title_rest=title, session=session_param)
     if id_for_restoraunt_by_id:
-        data_itog = await get_info_title_rest(rest_id=id_for_restoraunt_by_id, session=session_param)
-        return data_itog
+        try:
+            data_itog = await get_info_title_rest(rest_id=id_for_restoraunt_by_id, session=session_param)
+            custom_log_app.info(f"Получение информации по ресторану с названем {title} произошло успешно.")
+            return data_itog
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Ресторана с таким названием нет')
     

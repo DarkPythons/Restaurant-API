@@ -96,10 +96,12 @@ async def get_menu_info_for_orm(*, session:AsyncSession, restoraunt_id:int):
     result = await session.execute(query)
     return result.mappings().all()
 
-async def get_list_title_restoraunt(*, session:AsyncSession):
-    query = select(Restoraunt.c.title)
+async def get_title_restoraunt(*, session:AsyncSession, title:str):
+    query = select(Restoraunt.c.title).where(Restoraunt.c.title == title)
     result = await session.execute(query)
     return result.scalars().all()
+
+
 
 async def get_menu_id_for_restoraunt(*, session:AsyncSession, restoraunt_id:int):
     query = select(Restoraunt.c.menu_id).where(Restoraunt.c.id == restoraunt_id)

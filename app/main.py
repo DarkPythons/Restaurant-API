@@ -15,6 +15,10 @@ from restoraunt.routers import router as restoraunt_router
 from courier.routers import router_courier
 from backet.router import router_backet
 from orders.routers import router_order
+from baselog import custom_log_app,custom_log_exception
+
+
+
 settings_app = BaseSettingForApp()
 conifgs_app = BaseSettingsConfig()
 
@@ -25,16 +29,20 @@ conifgs_app = BaseSettingsConfig()
 
 @asynccontextmanager
 async def lifespan_for_fastapi(app:FastAPI):
-    #действия после запуска
     try:    
         await create_table()
-    except ValueError:
-        print('Таблицы уже созданы, можете начинать работу!')
+    except Exception as Error:
+        custom_log_exception.error(f"Возникла ошибка при создании таблиц, описание: {Error}")
+    custom_log_app.info(f"Приложение было включено.")
     yield
     #Действия после выключения приложения
-    #Если проект в режиме разработки, после работы удалить все таблицы:
-    if conifgs_app.PROJECT_IS_PROCESS_DEBUG:
-        await delete_table()
+    try:
+        #Если проект в режиме разработки, после работы удалить все таблицы:
+        if conifgs_app.PROJECT_IS_PROCESS_DEBUG:
+            await delete_table()
+    except Exception as Error:
+        custom_log_exception.error(f"Возникла ошибка при удалении таблиц, описание: {Error}")
+    custom_log_app.info(f"Приложение было выключено.")
 
 
 
@@ -125,8 +133,7 @@ async def add_time_process_in_header(request: Request, call_next):
 
     
     #Получить хост и порт обратившегося человека
-    #Получить хост клиента
     client_host = request.client.host
-    #Получить порт клиента
     client_port = request.client.port
+    custom_log_app.info(f"Пользователь с хостом {client_host} и портом {client_port} обратился к API, время: {str(process_time)}")
     return response
