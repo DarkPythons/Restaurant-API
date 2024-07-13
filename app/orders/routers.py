@@ -20,6 +20,39 @@ from baselog import custom_log_app, generate_response_error
 router_order = APIRouter()
 
 
+@router_order.get('/view_my_active_order/', summary='View my active order')
+async def get_my_active_order_list(
+    session_param: Annotated[AsyncSession, Depends(get_async_session)], 
+    current_user: Annotated[User, Depends(get_current_user)]
+):
+    """Функция для получения активных заказов пользователя"""
+    try:
+        active_order_user = await get_active_order_fo_user(session=session_param, user_id=current_user.id)
+        custom_log_app.info(f"Пользователь с id {current_user.id} получил свои активные заказы.")
+        return {'active_order' : active_order_user}
+    except Exception as Error:
+        await generate_response_error(Error)
+
+@router_order.get('/view_full_info_order/{order_id}')
+async def view_full_info(
+    order_id: Annotated[int, PathOrderDescription.order_id.value], 
+    session_param: Annotated[AsyncSession, Depends(get_async_session)], 
+    current_user: Annotated[User, Depends(get_current_user)]
+):
+    """Функция для получения полной информации по id заказа"""
+    order_info = await get_order_user_by_orderId(session=session_param, order_id=order_id, user_id=current_user.id)
+    if order_info:
+        try:
+            order_info = order_info[0]
+            data_full_spisok = await get_spisok_order_full_func(order_info=order_info, session=session_param, order_id=order_id)
+            data_itog = {"order_info" : order_info, 'full_data_for_items' : data_full_spisok}
+            custom_log_app.info(f"Пользователь с id {current_user.id} запросил полную информацию об заказе с id {order_id}")
+            return data_itog
+        except Exception as Error:
+            await generate_response_error(Error)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Вашего активного заказа с таким id не найдено")
+
 @router_order.post('/add_new_order/', summary='Add new order in db')
 async def add_new_order(
     session_param: Annotated[AsyncSession, Depends(get_async_session)], 
@@ -45,18 +78,6 @@ async def add_new_order(
         )
     
 
-@router_order.get('/view_my_active_order/', summary='View my active order')
-async def get_my_active_order_list(
-    session_param: Annotated[AsyncSession, Depends(get_async_session)], 
-    current_user: Annotated[User, Depends(get_current_user)]
-):
-    """Функция для получения активных заказов пользователя"""
-    try:
-        active_order_user = await get_active_order_fo_user(session=session_param, user_id=current_user.id)
-        custom_log_app.info(f"Пользователь с id {current_user.id} получил свои активные заказы.")
-        return {'active_order' : active_order_user}
-    except Exception as Error:
-        await generate_response_error(Error)
 
 
 @router_order.delete('/delete_my_order/{order_id}', summary='Delete order by order_id')
@@ -88,22 +109,3 @@ async def delete_user_order_id(
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Заказа с таким id не найдено')
 
-@router_order.get('/view_full_info_order/{order_id}')
-async def view_full_info(
-    order_id: Annotated[int, PathOrderDescription.order_id.value], 
-    session_param: Annotated[AsyncSession, Depends(get_async_session)], 
-    current_user: Annotated[User, Depends(get_current_user)]
-):
-    """Функция для получения полной информации по id заказа"""
-    order_info = await get_order_user_by_orderId(session=session_param, order_id=order_id, user_id=current_user.id)
-    if order_info:
-        try:
-            order_info = order_info[0]
-            data_full_spisok = await get_spisok_order_full_func(order_info=order_info, session=session_param, order_id=order_id)
-            data_itog = {"order_info" : order_info, 'full_data_for_items' : data_full_spisok}
-            custom_log_app.info(f"Пользователь с id {current_user.id} запросил полную информацию об заказе с id {order_id}")
-            return data_itog
-        except Exception as Error:
-            await generate_response_error(Error)
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Вашего активного заказа с таким id не найдено")

@@ -18,6 +18,24 @@ from baselog import custom_log_app, generate_response_error
 
 router_backet = APIRouter()
 
+@router_backet.get('/get_my_backet/', summary='Get my full backet')
+async def get_backet_for_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session_param: Annotated[AsyncSession, Depends(get_async_session)]
+):
+    """Функция для поучения корзины человека"""
+    items_for_backet = await get_raw_info_for_table(session=session_param, user_id=current_user.id)
+    if items_for_backet:
+        try:
+            itog_list_data: list = await get_data_list_func(items_for_backet, session_param)
+            custom_log_app.info(f"Пользователь с id {current_user.id} запросил свою корзину.")
+            return itog_list_data
+        except Exception as Error:
+            await generate_response_error(Error)
+    else:
+        return ORJSONResponse(status_code=200, content={'content' : []}) 
+    
+    
 @router_backet.post('/add_new_item_for_backet/{item_id}', summary='Add new item in backet')
 async def add_new_item_for_backet(
     current_user: Annotated[User, Depends(get_current_user)],
@@ -37,23 +55,7 @@ async def add_new_item_for_backet(
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Предмета с таким айди не найдено')
 
-@router_backet.get('/get_my_backet/', summary='Get my full backet')
-async def get_backet_for_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-    session_param: Annotated[AsyncSession, Depends(get_async_session)]
-):
-    """Функция для поучения корзины человека"""
-    items_for_backet = await get_raw_info_for_table(session=session_param, user_id=current_user.id)
-    if items_for_backet:
-        try:
-            itog_list_data: list = await get_data_list_func(items_for_backet, session_param)
-            custom_log_app.info(f"Пользователь с id {current_user.id} запросил свою корзину.")
-            return itog_list_data
-        except Exception as Error:
-            await generate_response_error(Error)
-    else:
-        return ORJSONResponse(status_code=200, content={'content' : []}) 
-    
+
 @router_backet.delete('/delete_item/{backet_id}', summary='Delete item in my backet by id')
 async def delete_one_item_bakcet(
     backet_id:Annotated[int, Path(title='Айди элемента корзины', description="Введите aйди элемента корзины:")], 
