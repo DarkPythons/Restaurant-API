@@ -20,21 +20,21 @@ In fact, this pet project is a consolidation of the FastAPI theme, it has loggin
 <li>After that, load the dependencies with the: pip install -r command requirements.txt</li>
 <li>Through the console, go to the app directory and launch the application with the command uvicorn main:app</li>
 <li>Open the browser and enter the address in the address bar: http://127.0.0.1:8000/docs</li>
+<li>You can mess around with these APIs, but to fully enjoy it, change the user table through the postgres database and give yourself superuser rights</li>
+
+<h3>When opening http://127.0.0.1:8000/docs
+and when the application is running correctly, you will be greeted by a description</h3>
+<img src="https://i.ibb.co/VLMRtzD/chrome-l-Rt-QZYo-SLE.png" alt="chrome-l-Rt-QZYo-SLE" border="0">
+<p>After scrolling down, you will encounter all kinds of operations</p>
+<img src="https://i.ibb.co/BL1pphm/API-exmaple2.png" alt="API-exmaple2" border="0">
+
 
 ## Distribute
 
-- [Service Name](Page Link)
-
-
 ## Developers
 
-- [Delevoper Name](GitHub Profile Link)
+- [VoblaSuperFish](https://github.com/VoblaSuperFish)
 
 ## License
+The PetProjectForRestoraunt project is distributed under the MIT license.
 
-
-## Разработчики
-
-- [Имя разработчика](ссылка на профиль GitHub)
-
-## Лицензия
