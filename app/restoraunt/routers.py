@@ -116,10 +116,10 @@ async def create_category_menu(
 
 @router.post('/add_new_dishaes/{restoraunt_id}/{menu_id}/{category_id}/', summary='Add new dishaes')
 async def add_new_dishaes_with_category(
-    menu_id:Annotated[int, PathParamsDescription.menu_id.value], 
-    list_of_dishies: List[AddDishiesSchema],
     restoraunt_id:Annotated[int, PathParamsDescription.restoraunt_id.value],
+    menu_id:Annotated[int, PathParamsDescription.menu_id.value], 
     category_id:Annotated[int, PathParamsDescription.category_id.value], 
+    list_of_dishies: List[AddDishiesSchema],
     current_user: Annotated[User, Depends(get_current_user)],  
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
