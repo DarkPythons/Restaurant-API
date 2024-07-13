@@ -17,9 +17,9 @@ class BaseLoggings:
         logger.critical(message)
 
 #Логи где будет вся информация
-custom_log_app = BaseLoggings(file="../loggs_app/info_app.log", rotation="10 KB", level='DEBUG')
+custom_log_app = BaseLoggings(file="../loggs_app/info_app.log", rotation="100 MB", level='DEBUG')
 #Логи где будет только информация об ошибках
-custom_log_exception = BaseLoggings(file="../loggs_app/except_app.log", rotation="10 KB", level='ERROR')
+custom_log_exception = BaseLoggings(file="../loggs_app/except_app.log", rotation="100 MB", level='ERROR')
 
 
 #Генерация ответа в случае ошибки
