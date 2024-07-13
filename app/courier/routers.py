@@ -11,6 +11,7 @@ from .orm import *
 from database import get_async_session
 from orders.utils import PathOrderDescription
 from .celery_config import send_email_message_courier
+from baselog import custom_log_app, generate_response_error, custom_log_exception
 
 rassilka_config = RassilkaBaseConfig()
 
@@ -30,13 +31,18 @@ async def add_new_courier(
         if user_id_is_not_null:
             courier_id_in_courier_table = await get_user_in_coruier_table(session=session_param, user_id=user_id)
             if not courier_id_in_courier_table:
-                await add_new_courier_orm(session=session_param, user_id=user_id, info_for_courier_add=info_for_courier_add)
-                user_info:dict= user_id_is_not_null[0]
-                return ORJSONResponse(
-                status_code=status.HTTP_201_CREATED, 
-                content={'content' : f'Пользователь {user_info['first_name']} {user_info['last_name']}, \
-                с айди {user_id} был добавлен в таблицу курьеров'}
-                )
+                try:
+                    await add_new_courier_orm(session=session_param, user_id=user_id, info_for_courier_add=info_for_courier_add)
+                    user_info:dict= user_id_is_not_null[0]
+                    custom_log_app.info(f"Был создан курьер, привязанный к id пользователя: \
+                        {user_id}, айди создател: {current_user.id}")
+                    return ORJSONResponse(
+                    status_code=status.HTTP_201_CREATED, 
+                    content={'content' : f'Пользователь {user_info['first_name']} {user_info['last_name']}, \
+                    с айди {user_id} был добавлен в таблицу курьеров'}
+                    )
+                except Exception as Error:
+                    await generate_response_error(Error)
             else:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Человек с этим id уже явялется курьером')
         else:
@@ -53,9 +59,13 @@ async def update_my_status_work(
     """Функция для обновления статуса курьера (работает или нет)"""
     courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
     if courier_info:
-        await update_info_for_table_courier(session=session_param, user_id=current_user.id, in_work=in_work)
-        message = await create_message(in_work)
-        return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : f'Ваш статус работы обновлен на: {message}'})
+        try:
+            await update_info_for_table_courier(session=session_param, user_id=current_user.id, in_work=in_work)
+            message = await create_message(in_work)
+            custom_log_app.info(f"Курьер с id {courier_info[0]['id']}, обновил статус работы на {message}.")
+            return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : f'Ваш статус работы обновлен на: {message}'})
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, 
@@ -72,8 +82,12 @@ async def get_my_verified_courier(
     if courier_info:
         courier_info = courier_info[0]
         if not courier_info['verified']:
-            await update_status_verified_user(session=session_param, user_id=current_user.id)
-            return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : f'Ваш статус верификации обновлен'})
+            try:
+                await update_status_verified_user(session=session_param, user_id=current_user.id)
+                custom_log_app.info(f"Курьер c id {courier_info['id']} подал заявку на верификацию аккаунта.")
+                return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : f'Ваш статус верификации обновлен'})
+            except Exception as Error:
+                await generate_response_error(Error)
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Вы уже верифицированный курьер')
     else:
@@ -95,13 +109,17 @@ async def take_order(
         if courier_info['verified']:
             order_info = await get_order_info_for_id(order_id=order_id, session=session_param)
             if order_info:
-                if not courier_info['in_work']:
-                    await update_info_for_table_courier(session=session_param, user_id=current_user.id, in_work=True)
-                await update_curier_orders(session=session_param, order_id=order_id, courier_id=courier_info['id'])
-                return ORJSONResponse(
-                status_code=status.HTTP_202_ACCEPTED, 
-                content={'content' : f'Вы добавили заказ номер {order_id} к своим заказам, хорошей доставки.'}
-                )
+                try:
+                    if not courier_info['in_work']:
+                        await update_info_for_table_courier(session=session_param, user_id=current_user.id, in_work=True)
+                    custom_log_app.info(f"Курьер с id {courier_info['id']} взял заказ с id {order_id}")
+                    await update_curier_orders(session=session_param, order_id=order_id, courier_id=courier_info['id'])
+                    return ORJSONResponse(
+                    status_code=status.HTTP_202_ACCEPTED, 
+                    content={'content' : f'Вы добавили заказ номер {order_id} к своим заказам, хорошей доставки.'}
+                    )
+                except Exception as Error:
+                    await generate_response_error(Error)
             else:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Заказа с таким id нет, или этот заказ уже чей-то') 
         else:
@@ -117,10 +135,14 @@ async def viev_order_user(
     """Функция для получения информации об заказах, которые принадлежат курьеру."""
     courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
     if courier_info: 
-        courier_info = courier_info[0]
-        courier_id = courier_info['id']
-        all_active_order:list = await get_active_order_courier(session=session_param, courier_id=courier_id)
-        return all_active_order
+        try:
+            courier_info = courier_info[0]
+            courier_id = courier_info['id']
+            all_active_order:list = await get_active_order_courier(session=session_param, courier_id=courier_id)
+            custom_log_app.info(f"Курьер с id {courier_id} запросил все свои заказы.")
+            return all_active_order
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Вы не являетесь курьером, поэтому не можете взять заказ.')  
 
@@ -132,8 +154,12 @@ async def get_my_info_account(
     """Функция для получения информации о профиле курьера (телефон, mail и тд.)"""
     courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
     if courier_info:
-        data_info = await get_info_func(courier_info)
-        return {'account_info' : data_info}
+        try:
+            data_info = await get_info_func(courier_info)
+            custom_log_app.info(f"Курьер с id {courier_info[0]['id']} запросил информацию о своём аккаунте")
+            return {'account_info' : data_info}
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, 
@@ -148,8 +174,12 @@ async def get_order_all(
     """Функция для получения информации об заказах, которые сделали люди"""
     courier_info = await get_user_in_coruier_table(session=session_param, user_id=current_user.id)
     if courier_info:
-        result = await get_order_all_no_courier(session=session_param)
-        return result
+        try:
+            result = await get_order_all_no_courier(session=session_param)
+            custom_log_app.info(f"Курьер с id {courier_info[0]['id']} запросил информацию об открытых заказах")
+            return result
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, 
@@ -173,15 +203,18 @@ async def update_status_order(
         if order_info:
             order_info = order_info[0]
             if order_info['status'] != 'Доставлен':
-                await update_status_this_order(order_id=order_id, session=session_param, status=new_stat)
                 try:
+                    await update_status_this_order(order_id=order_id, session=session_param, status=new_stat)
                     #Если рассылка включена
                     if rassilka_config.RASSILKA_IN_EMAIL:
                         if new_stat == 'Доставлен':
                             slovar_data = get_slovar_dates(courier_info=courier_info,order_info=order_info)
                             send_email_message_courier.apply_async(args=(slovar_data))
-                except:
-                    pass
+                            custom_log_app.info(f"Курьеру с id {courier_info['id']} на почту {courier_info['email']} было отправлено письмо")
+                    custom_log_app.info(f"Обновление статуса заказа с id {order_id}, на статус {new_stat} прошло успешно")
+                except Exception as Error:
+                    await generate_response_error(Error)
+                    
                 return ORJSONResponse(status_code=status.HTTP_200_OK, content={'content' : 'Вы успешно обновили статус заказа.'})
             else:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Вы не можете изменять статус доставленных заказов')

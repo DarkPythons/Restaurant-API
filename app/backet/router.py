@@ -14,6 +14,7 @@ from .orm import (
 )
 from database import get_async_session
 from .utils import get_data_list_func
+from baselog import custom_log_app, generate_response_error
 
 router_backet = APIRouter()
 
@@ -26,8 +27,13 @@ async def add_new_item_for_backet(
     """Функция добавления элемента из меню любого ресторана по его id"""
     list_id_for_items_menu:list = await get_list_id_items(session=session_param)
     if item_id in  list_id_for_items_menu:
-        await add_new_item_for_backet_orm(user_id=current_user.id, item_id=item_id, session=session_param, order_id=None)
-        return ORJSONResponse(status_code=201, content={'content' : 'Вы успешно добавили новый предмет в корзину'}) 
+        try:
+            await add_new_item_for_backet_orm(user_id=current_user.id, item_id=item_id, session=session_param, order_id=None)
+            custom_log_app.info(f"Добавление элемента с id {item_id} \
+                в корзину пользователя с id {current_user.id} прошло успешно")
+            return ORJSONResponse(status_code=201, content={'content' : 'Вы успешно добавили новый предмет в корзину'}) 
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Предмета с таким айди не найдено')
 
@@ -39,8 +45,12 @@ async def get_backet_for_user(
     """Функция для поучения корзины человека"""
     items_for_backet = await get_raw_info_for_table(session=session_param, user_id=current_user.id)
     if items_for_backet:
-        itog_list_data: list = await get_data_list_func(items_for_backet, session_param)
-        return itog_list_data
+        try:
+            itog_list_data: list = await get_data_list_func(items_for_backet, session_param)
+            custom_log_app.info(f"Пользователь с id {current_user.id} запросил свою корзину.")
+            return itog_list_data
+        except Exception as Error:
+            await generate_response_error(Error)
     else:
         return ORJSONResponse(status_code=200, content={'content' : []}) 
     
@@ -56,11 +66,15 @@ async def delete_one_item_bakcet(
         backet_item_user:dict = backet_item_user[0]
         if backet_item_user['user_id'] == current_user.id:
             if not backet_item_user['order_id']:
-                await delete_item_backet(backet_id=backet_id, session=session_param)
-                return ORJSONResponse(
-                    status_code=200, 
-                    content={f'content' : f'Вы успешно удалили элемент корзины с айди: {backet_id}'}
-                    ) 
+                try:
+                    await delete_item_backet(backet_id=backet_id, session=session_param)
+                    custom_log_app.info(f"Пользователь с id {current_user.id} удалил объект из корзины с id {backet_id}")
+                    return ORJSONResponse(
+                        status_code=200, 
+                        content={f'content' : f'Вы успешно удалили элемент корзины с айди: {backet_id}'}
+                        )
+                except Exception as Error:
+                    await generate_response_error(Error)
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, 

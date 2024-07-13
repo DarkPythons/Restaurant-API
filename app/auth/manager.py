@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, Response
 from fastapi_users import BaseUserManager, IntegerIDMixin, models, schemas,exceptions,FastAPIUsers
 from config import SettingsForTokenJWT
 from typing import Optional,Annotated
@@ -7,6 +7,7 @@ from fastapi import Depends, Request
 from auth.models import User
 from auth.auth import auth_backend
 from database import get_user_db
+from baselog import custom_log_app
 
 settings_for_token = SettingsForTokenJWT()
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
@@ -16,7 +17,10 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
 
     #Переопределение метода (что будет происходить после регистрации пользователя)
     async def on_after_register(self, user: User, request: Optional[Request]):
-        print(f'User: {user.id}, has register!!!')
+        custom_log_app.info(f"Новый пользователь с id {user.id} в базе данныx")
+    
+    async def on_after_login(self, user: User, request: Optional[Request],response: Optional[Response] = None):
+        custom_log_app.info(f"Пользователь с id {user.id} сделал вход в аккаунт")
     
     #Полное переопределение метода (метод для создания пользователя в базе данных)
     async def create(
