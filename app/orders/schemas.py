@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from enum import Enum
+from typing import List
 
 class StatusForOrder(Enum):
     """Создание перечисления для выборки курьером статуса заказа"""
@@ -20,5 +21,4 @@ class BaseShemasOrder(BaseModel):
 class AddShemasOrder(BaseShemasOrder):
     """Модель для добавления новых заказов"""
     pass
-
 
