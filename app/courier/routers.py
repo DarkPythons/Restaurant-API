@@ -36,11 +36,11 @@ async def add_new_courier(
                     await add_new_courier_orm(session=session_param, user_id=user_id, info_for_courier_add=info_for_courier_add)
                     user_info:dict= user_id_is_not_null[0]
                     custom_log_app.info(f"Был создан курьер, привязанный к id пользователя: \
-                        {user_id}, айди создател: {current_user.id}")
+{user_id}, айди создател: {current_user.id}")
                     return ORJSONResponse(
                     status_code=status.HTTP_201_CREATED, 
-                    content={'content' : f'Пользователь {user_info['first_name']} {user_info['last_name']}, \
-                    с айди {user_id} был добавлен в таблицу курьеров'}
+                    content={'content' : f'Пользователь {info_for_courier_add.first_name} {info_for_courier_add.last_name}, \
+с айди {user_id} был добавлен в таблицу курьеров'}
                     )
                 except Exception as Error:
                     await generate_response_error(Error)

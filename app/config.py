@@ -44,7 +44,7 @@ class RassilkaBaseConfig(BaseConfigClassInFile):
     RASSILKA_IN_EMAIL: bool = Field(default=False)
 
 class CeleryConfigSettings(BaseConfigClassInFile):
-    SMTP_USER:EmailStr = Field()
+    SMTP_USER:EmailStr = Field(default='user@example.com')
     SMTP_PASSWORD:str = Field(default='password')
     SMTP_HOST:str=Field(default='smtp.gmail.com')
     SMTP_PORT:int=Field(default=465)
