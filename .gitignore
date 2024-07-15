@@ -4,3 +4,4 @@ app/.env
 __pycache__
 *.log
 *.zip
+.pytest_cache

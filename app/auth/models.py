@@ -1,5 +1,5 @@
 from fastapi_users.db import SQLAlchemyBaseUserTable
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
+from sqlalchemy.orm import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String,Boolean, MetaData, Column, Table
 

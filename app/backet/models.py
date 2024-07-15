@@ -11,7 +11,7 @@ BacketTable = Table(
     'backet',
     backet_metadata,
     Column('id', Integer, primary_key=True),
-    Column('user_id', ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False),
-    Column('item_id', ForeignKey(DishesModel.c.id, ondelete='RESTRICT'), nullable=False),
-    Column('order_id', ForeignKey(OrderTable.c.id, ondelete='SET NULL'), nullable=True),
+    Column('user_id', ForeignKey(user.c.id, name="fk_backet_user"), nullable=False),
+    Column('item_id', ForeignKey(DishesModel.c.id, name="fk_backet_item"), nullable=False),
+    Column('order_id', ForeignKey(OrderTable.c.id, name="fk_backet_order"), nullable=True),
 )

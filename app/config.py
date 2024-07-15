@@ -54,6 +54,14 @@ class RedisConfigSettings(BaseConfigClassInFile):
     REDIS_HOST:str=Field(default='localhost')
     REDIS_PORT:int=Field(default=6379)
 
+#Параметры базы данных для тестировки приложения
+class TestingAppDatabaseSettings(BaseConfigClassInFile):
+    DB_HOST_TEST:str = Field(min_length=1, max_length=15, default='127.0.0.1')
+    DB_PORT_TEST:str = Field(min_length=1, max_length=10, default='5432')
+    DB_PASS_TEST:str = Field(min_length=5, max_length=100)
+    DB_NAME_TEST:str = Field(min_length=1, max_length=100, default='praktika_fastapi_test')
+    DB_USER_TEST:str = Field(min_length=1, max_length=30, default="postgres")
+
 
 description = """
 ## Это API приложение, которое может показать некоторую структуру приложения по доставке еды.

@@ -17,7 +17,7 @@ OrderTable = Table(
     Column('status', String, nullable=False),
     Column('time_create', DateTime(timezone=True), server_default=func.now()),
     Column('address', String, nullable=False),
-    Column('user_id', ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False),
-    Column('courier_id', ForeignKey(CourierTable.c.id, ondelete='RESTRICT'), nullable=True)
+    Column('user_id', ForeignKey(user.c.id, name="fk_order_user"), nullable=False),
+    Column('courier_id', ForeignKey(CourierTable.c.id, name="fk_order_courier"), nullable=True)
 
 )

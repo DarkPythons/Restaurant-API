@@ -17,5 +17,5 @@ CourierTable = Table(
     Column('verified', Boolean, nullable=False),
     Column('in_work', Boolean, nullable=False),
 
-    Column('user_id', Integer, ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False),
+    Column('user_id', Integer, ForeignKey(user.c.id, name="fk_courier_user"), nullable=False),
 )

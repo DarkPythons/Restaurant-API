@@ -13,7 +13,7 @@ MenuModel = Table(
     Column('title', String, nullable=False),
     Column('description', String, nullable=True),
 
-    Column('restoraunt_id', Integer, ForeignKey('restorunt.id', ondelete='RESTRICT'), nullable=False, unique=True)
+    Column('restoraunt_id', Integer, ForeignKey('restorunt.id', name="fk_menu_restoraunt"), nullable=False, unique=True)
 )
 
 #Модель ресторана
@@ -27,8 +27,8 @@ Restoraunt = Table(
     Column('description', String, nullable=True),
 
     #ССылка на пользователя, который оформил размещение ресторана
-    Column('user_id', Integer, ForeignKey(user.c.id, ondelete='RESTRICT'), nullable=False),
-    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'), nullable=True)
+    Column('user_id', Integer, ForeignKey(user.c.id, name="fk_restoraunt_user"), nullable=False),
+    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, name="fk_restorunt_menu"), nullable=True)
 )
 
 #Модель контакной информации
@@ -41,7 +41,7 @@ ContactModel = Table(
     Column('office_restoraunt_address', String, nullable=True),
 
     #К какому ресторану будет относится эта схема
-    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False, unique=True)
+    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, name="fk_contact_restoraunt"), nullable=False, unique=True)
 )
 
 #Модель категорий
@@ -52,8 +52,8 @@ CategoryModel = Table(
     Column('title', String, nullable=False),
     Column('description', String, nullable=True),
 
-    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'), nullable=False),
-    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False)
+    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, name="fk_category_menu"), nullable=False),
+    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, name="fk_category_restoraunt"), nullable=False)
 )
 
 #Модель блюд
@@ -68,7 +68,7 @@ DishesModel = Table(
     Column('kolories', Integer, nullable=True),
 
     #Ссылка к какой категории относится блюдо
-    Column('category_id', Integer, ForeignKey(CategoryModel.c.id, ondelete='RESTRICT'), nullable=False),
-    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, ondelete='RESTRICT'),nullable=False),
-    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, ondelete='RESTRICT'), nullable=False),
+    Column('category_id', Integer, ForeignKey(CategoryModel.c.id, name="fk_dishes_category"), nullable=False),
+    Column('menu_id', Integer, ForeignKey(MenuModel.c.id, name="fk_dishes_menu"),nullable=False),
+    Column('restoraunt_id', Integer, ForeignKey(Restoraunt.c.id, name="fk_dishes_restorunt"), nullable=False),
 )

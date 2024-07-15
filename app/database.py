@@ -6,8 +6,7 @@ from fastapi import Depends
 from typing import Annotated
 
 from config import DataBaseSettingPostgre
-from auth.models import Bases_meta, metadata_for_table2_user
-from auth.models import User
+from auth.models import Bases_meta, metadata_for_table2_user, User
 from restoraunt.models import metadata_restoraunt
 from courier.models import courier_metadata
 from backet.models import backet_metadata
@@ -34,12 +33,17 @@ METADATA_TABLE_LIST = [
     metadata_for_table2_user,
     metadata_restoraunt,
     courier_metadata,
-
     orders_metadata,
     backet_metadata,
 ]
 
-
+METADATA_TABLE_LIST_FOR_DELETE = [
+    backet_metadata,
+    orders_metadata,
+    courier_metadata,
+    metadata_restoraunt,
+    metadata_for_table2_user
+]
 
 async def create_table():
     async with engine.begin() as connect:
@@ -52,10 +56,11 @@ async def create_table():
 
 async def delete_table():
     async with engine.begin() as connect:
-        #Удаление всех таблиц
-        await connect.run_sync(Bases_meta.metadata.drop_all)
-        for metadata in METADATA_TABLE_LIST:
+        #Удаление всех таблиц (При удалении идёт другой порядок, чтобы внешнии ключи не вызывали ошибки)
+        for metadata in METADATA_TABLE_LIST_FOR_DELETE:
             await connect.run_sync(metadata.drop_all)
+        await connect.run_sync(Bases_meta.metadata.drop_all)
+        
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
