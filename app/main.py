@@ -23,9 +23,6 @@ settings_app = BaseSettingForApp()
 conifgs_app = BaseSettingsConfig()
 
 
-#Для запуска GUI для Celery команда: celery -A tasks.tasks:celery flower
-#После чего нужно перейти по адресу и хосту: http://127.0.0.1:5555/   и откроется GUI в браузере
-#Для запуска обработчка отложенных событий Celery нужна команда: celery -A courier.celery_config:celery_courier_rassilka worker --loglevel=INFO --pool=solo
 
 @asynccontextmanager
 async def lifespan_for_fastapi(app:FastAPI):
