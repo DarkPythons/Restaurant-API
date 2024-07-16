@@ -1,19 +1,16 @@
-import sys
-print(sys.path)
-
-from config import TestingAppDatabaseSettings
-from database import METADATA_TABLE_LIST, get_async_session, METADATA_TABLE_LIST_FOR_DELETE
+import asyncio
+from fastapi.testclient import TestClient
+import pytest, pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 from httpx import AsyncClient
 from typing import AsyncGenerator
-from main import app
-import pytest, pytest_asyncio
-import asyncio
-from fastapi.testclient import TestClient
-from auth.models import Bases_meta
 
+from config import TestingAppDatabaseSettings
+from database import METADATA_TABLE_LIST, get_async_session, METADATA_TABLE_LIST_FOR_DELETE
+from main import app
+from auth.models import Bases_meta
 
 settings_testDb = TestingAppDatabaseSettings()
 database_url_test = f"postgresql+asyncpg://\
@@ -33,10 +30,8 @@ async def override_get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
 
-
 #Переключение зависимости подключения к базе на тестовое
 app.dependency_overrides[get_async_session] = override_get_async_session
-
 
 @pytest_asyncio.fixture(autouse=True, scope="session")
 async def create_delete_table_in_db():

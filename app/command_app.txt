@@ -1,0 +1,22 @@
+После настройки файла .env по примеру .env_example и загрузки всех зависимостей
+можете переходить к следующим командам:
+
+Для запуска приложения из текущей директории app:
+uvicorn main:app 
+Запуск приложения в режиме debug
+uvicorn main:app --reload
+
+Для запуска тестов приложения введите команду
+python -m pytest
+или 
+python -m pytest -v
+Для включения описания
+
+Для запуска email рассылки курьерам после доставки заказа
+воспользуйтесь командой (при этом настроив .env файл)
+celery -A courier.celery_config:celery_courier_rassilka worker --loglevel=INFO --pool=solo
+
+Для запуска GUI celery Flower воспользуйтесь командой
+celery -A courier.celery_config:celery_courier_rassilka flower
+После перейдите на сайт
+http://127.0.0.1:5555/

@@ -5,3 +5,5 @@ __pycache__
 *.log
 *.zip
 .pytest_cache
+/venv1
+venv1
