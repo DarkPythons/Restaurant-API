@@ -7,3 +7,5 @@ __pycache__
 .pytest_cache
 /venv1
 venv1
+.venv
+*.lock

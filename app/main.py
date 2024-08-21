@@ -18,10 +18,8 @@ from orders.routers import router_order
 from baselog import custom_log_app,custom_log_exception
 
 
-
 settings_app = BaseSettingForApp()
 conifgs_app = BaseSettingsConfig()
-
 
 
 @asynccontextmanager
@@ -42,9 +40,6 @@ async def lifespan_for_fastapi(app:FastAPI):
     custom_log_app.info(f"Приложение было выключено.")
 
 
-
-
-
 app = FastAPI(
     title=settings_app.NAME_APP,
     version=settings_app.VERSION_APP,
@@ -56,7 +51,7 @@ app = FastAPI(
     contact={
         #Кастомные настройки контактов
         "name" : 'Creator',
-        'url' : 'https://github.com/VoblaSuperFish',
+        'url' : 'https://github.com/DarkPythons',
     },
     license_info={
         #Информация об подключенных лицензиях
@@ -119,7 +114,6 @@ app.include_router(fastapi_users_modules.get_register_router(UserRead, UserCreat
 
 
 
-#Добалвение middleware, который перехватывает запросы http/https и добавляет к ним время выполнения операции
 @app.middleware(conifgs_app.HTTP_OR_HTTPS)
 async def add_time_process_in_header(request: Request, call_next):
     start_time = time.time()

@@ -70,11 +70,17 @@ async def get_base_menu_info(restoraunt_id:int,session:AsyncSession):
     else:
         return base_menu_info[0]
 
-async def get_data_itog_for_restoraunt(restoraunt_id:int, session: AsyncSession, base_result_by_search):
+async def get_data_itog_for_restoraunt(
+        restoraunt_id:int, 
+        session: AsyncSession, 
+        base_result_by_search
+    ):
     contact_info = await get_contact_info(restoraunt_id=restoraunt_id, session=session)
-    list_category_dishayes = await get_list_products_for_menu(restoraunt_id=restoraunt_id, session=session)
+    list_category_dishayes = await get_list_products_for_menu(
+        restoraunt_id=restoraunt_id, 
+        session=session)
     base_info_restoraunt = {**base_result_by_search[0]}
-    base_menu_info = await get_base_menu_info(restoraunt_id=restoraunt_id,session=session)
+    base_menu_info = await get_base_menu_info(restoraunt_id=restoraunt_id, session=session)
     data_itog = {
         "base_restoraunt_info" : base_info_restoraunt, 
         "contact_information" : contact_info, 
@@ -95,5 +101,8 @@ async def get_menu_id_func(*, restoraunt_id, session_param):
 async def get_info_title_rest(*,rest_id:int, session: AsyncSession):
     id_for_restoraunt_by_id = rest_id[0]
     base_result_by_search:list = await get_info_restoraunt_by_id(restoraunt_id=id_for_restoraunt_by_id, session=session)
-    data_itog = await get_data_itog_for_restoraunt(restoraunt_id=id_for_restoraunt_by_id, session=session, base_result_by_search=base_result_by_search)   
+    data_itog = await get_data_itog_for_restoraunt(
+        restoraunt_id=id_for_restoraunt_by_id, 
+        session=session, 
+        base_result_by_search=base_result_by_search)   
     return data_itog

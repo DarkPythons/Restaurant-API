@@ -1,5 +1,5 @@
 <p align="center">
-      <img src="https://i.ibb.co/0XcwvjC/photo.jpg" alt="PetProjectPhoto" border="0" width="727">
+      <img src="https://i.ibb.co/0XcwvjC/photo.jpg" alt="API Restorunt" border="0" width="727">
 </p>
 
 <p align="center">
@@ -36,10 +36,10 @@ and when the application is running correctly, you will be greeted by a descript
 
 ## Developers
 
-- [VoblaSuperFish](https://github.com/VoblaSuperFish)
+- [DarkPythons](https://github.com/DarkPythons)
 
 ## License
-The PetProjectForRestoraunt project is distributed under the MIT license.
+The Restaurant-API project is distributed under the MIT license.
 
 ## Examples of API operation
 <p>

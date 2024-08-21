@@ -6,8 +6,6 @@ from .models import Restoraunt, MenuModel, CategoryModel,DishesModel,ContactMode
 from .schemas import AddDishiesSchema
 
 
-
-
 async def create_restoraunt_orm(*, title,rating,address,description, user_id, session:AsyncSession):
     query = insert(Restoraunt).values(
     title=title,

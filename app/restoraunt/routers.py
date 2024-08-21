@@ -10,6 +10,9 @@ from .schemas import (
     AddMenuSchema,AddNewCategorSchema,
     AddDishiesSchema, AddContantSchema
 )
+from database import get_async_session
+from .utils import user_is_osvov_restoraunt, get_menu_id_func, get_info_title_rest, PathParamsDescription
+from baselog import custom_log_app, generate_response_error
 from .orm import (
     get_title_restoraunt,
     create_restoraunt_orm,
@@ -22,12 +25,8 @@ from .orm import (
     get_info_restoraunt_by_id,
     get_info_for_restoraunt_orm,
 )
-from database import get_async_session
-from .utils import user_is_osvov_restoraunt, get_menu_id_func, get_info_title_rest, PathParamsDescription
-from baselog import custom_log_app, generate_response_error
 
 router = APIRouter()
-
 
 @router.post('/create_new_restoraunt/', response_class=ORJSONResponse, summary='Create/upload new restoraunt')
 async def create_new_restoraunt(
@@ -59,14 +58,22 @@ async def create_meny_baseinfo(
     session_param: Annotated[AsyncSession, Depends(get_async_session)]
 ):
     """Фукнция для добавления базовой информации для меню ресторана по его айди"""
-    verifeied_user = await user_is_osvov_restoraunt(restoraunt_id=restoraunt_id, current_user=current_user, session=session_param)
+    verifeied_user = await user_is_osvov_restoraunt(
+    restoraunt_id=restoraunt_id, 
+    current_user=current_user, 
+    session=session_param)
     if verifeied_user == 200:
         restaraunt_menu = await get_restaraunt_menu(restoraunt_id=restoraunt_id, session=session_param)
         if restaraunt_menu == (None,):
             try:
-                await add_new_info_for_menu(restoraunt_id=restoraunt_id, **info_for_menu.model_dump(), session=session_param)
+                await add_new_info_for_menu(
+                    restoraunt_id=restoraunt_id,
+                    **info_for_menu.model_dump(), 
+                    session=session_param)
                 custom_log_app.info(f"Меню для ресторана с id {restoraunt_id} было добавлено")
-                return ORJSONResponse(content={"content" : "Создание объекта меню произошло успешно!"}, status_code=status.HTTP_201_CREATED)
+                return ORJSONResponse(
+                    content={"content" : "Создание объекта меню произошло успешно!"}, 
+                    status_code=status.HTTP_201_CREATED)
             except Exception as Error:
                 await generate_response_error(Error)
         else:
